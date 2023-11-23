@@ -1,13 +1,13 @@
 //
-//  LessonsViewController.swift
+//  ProfileNotificationsViewController.swift
 //  Drevmass
 //
-//  Created by Мерей Булатова on 20.11.2023.
+//  Created by Мерей Булатова on 24.11.2023.
 //
 
 import UIKit
 
-class LessonsViewController: UIViewController {
+class ProfileNotificationsViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()

@@ -8,7 +8,7 @@
 import UIKit
 import AdvancedPageControl
 
-class FormViewController: UIViewController {
+class UserInfoViewController: UIViewController {
     
     //MARK: - UI Elements
     
@@ -58,6 +58,8 @@ class FormViewController: UIViewController {
         button.titleLabel?.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
         button.setTitleColor(.black, for: .normal)
         button.layer.cornerRadius = 16
+        
+        button.addTarget(self, action: #selector(genderButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -69,6 +71,8 @@ class FormViewController: UIViewController {
         button.titleLabel?.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 16
+        
+        button.addTarget(self, action: #selector(genderButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -169,7 +173,6 @@ class FormViewController: UIViewController {
     private lazy var datePicker: UIDatePicker = {
         let datePick = UIDatePicker()
         datePick.datePickerMode = .date
-        datePick.addTarget(self, action: #selector(chooseDate), for: .valueChanged)
         return datePick
     }()
     
@@ -196,7 +199,9 @@ class FormViewController: UIViewController {
         button.setTitle("Низкая", for: .normal)
         button.titleLabel?.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
         button.setTitleColor(.black, for: .normal)
-        button.layer.cornerRadius = 10
+        button.layer.cornerRadius = 15
+        
+        button.addTarget(self, action: #selector(activityButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -207,7 +212,9 @@ class FormViewController: UIViewController {
         button.setTitle("Средняя", for: .normal)
         button.titleLabel?.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
         button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 10
+        button.layer.cornerRadius = 15
+        
+        button.addTarget(self, action: #selector(activityButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -218,7 +225,9 @@ class FormViewController: UIViewController {
         button.setTitle("Высокая", for: .normal)
         button.titleLabel?.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
         button.setTitleColor(.black, for: .normal)
-        button.layer.cornerRadius = 10
+        button.layer.cornerRadius = 15
+        
+        button.addTarget(self, action: #selector(activityButtonTapped), for: .touchUpInside)
         return button
     }()
 
@@ -226,18 +235,21 @@ class FormViewController: UIViewController {
         let button = UIButton()
         button.backgroundColor = .appBeige
         button.setTitle("Следующий вопрос", for: .normal)
+        button.titleLabel?.font = .appFont(ofSize: 18, weight: .light, font: .Rubik)
         button.configuration?.titleAlignment = .center
         button.layer.cornerRadius = 30
+        
+        button.addTarget(self, action: #selector(nextButtonTapped), for: .touchUpInside)
         return button
     }()
     
     private lazy var skipButton: UIButton = {
         let button = UIButton(type: .system)
-        
         button.setTitle("Пропустить", for: .normal)
         button.setTitleColor(.appGray, for: .normal)
         button.titleLabel?.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
         
+        button.addTarget(self, action: #selector(skipButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -276,11 +288,15 @@ class FormViewController: UIViewController {
     }
 }
 
-private extension FormViewController {
+//MARK: - Add Views & Constraints
+
+private extension UserInfoViewController {
     
     func setupViews() {
         view.backgroundColor = .white
-        view.addSubviews(logoImage, titleLabel, subtitleLabel, genderLabel, maleButton, femaleButton, heightTextField, heightLabel, smLabel, heightTFView, weightTextField, weightLabel, kgLabel, weightTFView, dateTextField, datePicker, dateLabel, dateTFView, activityLabel, lowButton, middleButton, highButton, nextButton, skipButton, pageControl)
+        view.addSubviews(
+            logoImage, titleLabel, subtitleLabel, genderLabel, maleButton, femaleButton, heightTextField, heightLabel, smLabel, heightTFView, weightTextField, weightLabel, kgLabel, weightTFView, dateTextField, datePicker, dateLabel, dateTFView, activityLabel, lowButton, middleButton, highButton, nextButton, skipButton, pageControl
+        )
     }
     
     func setupConstraints() {
@@ -383,14 +399,95 @@ private extension FormViewController {
             make.trailing.leading.equalToSuperview().inset(40)
             make.top.equalTo(dateTextField.snp.bottom)
         }
+        
+        activityLabel.snp.makeConstraints { make in
+            make.top.equalTo(dateTextField.snp.bottom).offset(29)
+            make.leading.equalToSuperview().inset(40)
+        }
+        
+        highButton.snp.makeConstraints { make in
+            make.top.equalTo(activityLabel.snp.bottom).offset(16)
+            make.leading.equalToSuperview().inset(40)
+            make.size.equalTo(CGSize(width: 88, height: 32))
+        }
+        
+        middleButton.snp.makeConstraints { make in
+            make.centerY.equalTo(highButton)
+            make.centerX.equalToSuperview()
+            make.size.equalTo(CGSize(width: 88, height: 32))
+        }
+        
+        lowButton.snp.makeConstraints { make in
+            make.centerY.equalTo(middleButton)
+            make.trailing.equalToSuperview().inset(40)
+            make.size.equalTo(CGSize(width: 88, height: 32))
+        }
+        
+        nextButton.snp.makeConstraints { make in
+            make.bottom.equalToSuperview().inset(76)
+            make.trailing.leading.equalToSuperview().inset(40)
+            make.size.equalTo(CGSize(width: 296, height: 61))
+        }
+        
+        skipButton.snp.makeConstraints { make in
+            make.top.equalTo(nextButton.snp.bottom).offset(24)
+            make.leading.equalToSuperview().inset(24)
+        }
+        
+        pageControl.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.centerY.equalTo(skipButton)
+            make.size.equalTo(CGSize(width: 38, height: 8))
+        }
     }
 }
 
-private extension FormViewController {
+extension UserInfoViewController {
     
     @objc private func chooseDate() {
-           let dateFormatter = DateFormatter()
-           dateFormatter.dateFormat = "dd.MM.yyyy"
-           dateTextField.text = dateFormatter.string(from: datePicker.date)
-       }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd.MM.yyyy"
+        dateTextField.text = dateFormatter.string(from: datePicker.date)
+    }
+}
+
+private extension UserInfoViewController {
+    
+    @objc private func genderButtonTapped(sender: UIButton) {
+        let genderButtons = [maleButton, femaleButton]
+        
+        for button in genderButtons {
+            button.isSelected = false
+            button.backgroundColor = .appLightGray
+            button.setTitleColor(.appBrown, for: .normal)
+        }
+            sender.isSelected = true
+            sender.backgroundColor = .appBeige
+            sender.setTitleColor(.appWhite, for: .normal)
+    }
+    
+    @objc private func activityButtonTapped(sender: UIButton) {
+        let activityButton = [lowButton, middleButton, highButton]
+        
+        for button in activityButton {
+            button.isSelected = false
+            button.backgroundColor = .appLightGray
+            button.setTitleColor(.appBrown, for: .normal)
+        }
+            sender.isSelected = true
+            sender.backgroundColor = .appBeige
+            sender.setTitleColor(.appWhite, for: .normal)
+    }
+    
+    @objc private func nextButtonTapped() {
+        let notificationVC = NotificationViewController()
+        navigationController?.show(notificationVC, sender: true)
+        navigationItem.title = ""
+    }
+    
+    @objc private func skipButtonTapped() {
+        let tabBarController = TabBarController()
+        tabBarController.modalPresentationStyle = .fullScreen
+        self.present(tabBarController, animated: true, completion: nil)
+    }
 }

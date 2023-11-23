@@ -168,7 +168,9 @@ private extension SignInViewController {
         navigationItem.title = "Вход"
         
         view.addSubviews(posterImage, backView)
-        backView.addSubviews(logoImage, titleLabel, subtitleLabel, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, signInButton, signUpButton, forgetPasswordLabel, forgetPasswordButton)
+        backView.addSubviews(
+            logoImage, titleLabel, subtitleLabel, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, signInButton, signUpButton, forgetPasswordLabel, forgetPasswordButton
+        )
     }
     
     func setupConstraints() {

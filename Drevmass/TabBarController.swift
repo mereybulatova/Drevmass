@@ -10,7 +10,7 @@ import SnapKit
 
 class TabBarController: UITabBarController {
     
-    var lineView = {
+   lazy var lineView = {
         let view = UIView()
         return view
     }()
@@ -32,7 +32,7 @@ class TabBarController: UITabBarController {
     }
 
     private func setUpTabs() {
-        let productVC = ProductViewController()
+        let productVC = ProductsViewController()
         productVC.tabBarItem.title = "Товары"
         productVC.tabBarItem.image = UIImage(named: "productTabBar")
         

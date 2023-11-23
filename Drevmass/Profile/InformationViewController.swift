@@ -1,17 +1,17 @@
 //
-//  ProductViewController.swift
+//  InformationViewController.swift
 //  Drevmass
 //
-//  Created by Мерей Булатова on 20.11.2023.
+//  Created by Мерей Булатова on 24.11.2023.
 //
 
 import UIKit
 
-class ProductViewController: UIViewController {
+class InformationViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+
         // Do any additional setup after loading the view.
     }
     

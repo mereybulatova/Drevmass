@@ -182,7 +182,9 @@ private extension SignUpViewController {
     func setupViews() {
         navigationItem.title = "Регистрация"
         view.backgroundColor = .appWhite
-        view.addSubviews(logoImage, titleLabel, subtitleLabel, nameTextField, nameTFImage, nameTFView, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, repeatPasswordTextField, repeatPasswordTFImage, repeatPasswordTFView, signUpButton, signInLabel, signInButton)
+        view.addSubviews(
+            logoImage, titleLabel, subtitleLabel, nameTextField, nameTFImage, nameTFView, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, repeatPasswordTextField, repeatPasswordTFImage, repeatPasswordTFView, signUpButton, signInLabel, signInButton
+        )
     }
     
     func setupConstraints() {

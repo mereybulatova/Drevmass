@@ -1,5 +1,5 @@
 //
-//  FavoritesViewController.swift
+//  LessonsViewController.swift
 //  Drevmass
 //
 //  Created by Мерей Булатова on 20.11.2023.
@@ -7,19 +7,19 @@
 
 import UIKit
 
-class FavoritesViewController: UIViewController {
-
+class ProductsViewController: UIViewController {
+    
     //MARK: - UI Elements
 
-    private lazy var favoriteCollectionView: UICollectionView = {
+    private lazy var productsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-        layout.itemSize = CGSize(width: 328, height: 316)
-        layout.minimumLineSpacing = 8
-        layout.minimumInteritemSpacing = 8
+        layout.itemSize = CGSize(width: 328, height: 255)
+        layout.minimumLineSpacing = 10
+        layout.minimumInteritemSpacing = 10
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.register(LessonsCollectionViewCell.self, forCellWithReuseIdentifier: "LessonsCell")
+        collectionView.register(ProductsCollectionViewCell.self, forCellWithReuseIdentifier: "ProductsCell")
         collectionView.backgroundColor = .white
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.showsVerticalScrollIndicator = false
@@ -32,25 +32,25 @@ class FavoritesViewController: UIViewController {
         setupViews()
         setupConstraints()
         
-        favoriteCollectionView.dataSource = self
-        favoriteCollectionView.delegate = self
+        productsCollectionView.dataSource = self
+        productsCollectionView.delegate = self
     }
 }
 
-private extension FavoritesViewController {
+private extension ProductsViewController {
     
     func setupViews() {
         view.backgroundColor = .white
-        view.addSubview(favoriteCollectionView)
+        view.addSubview(productsCollectionView)
         
-        navigationItem.title = "Избранные уроки"
+        navigationItem.title = "Массажеры и аксессуары"
         navigationController?.setDefaultNavigationBarAppearance()
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(named: "profile"), style: .plain, target: self, action: #selector(profileVC))
         tabBarController?.tabBar.barTintColor = .appBrown
     }
     
     func setupConstraints() {
-        favoriteCollectionView.snp.makeConstraints { make in
+        productsCollectionView.snp.makeConstraints { make in
             make.top.bottom.equalTo(view.safeAreaLayoutGuide)
             make.right.left.equalToSuperview()
         }
@@ -63,14 +63,14 @@ private extension FavoritesViewController {
 
      //MARK: - UICollectionViewDelegate & Data Source
 
-extension FavoritesViewController: UICollectionViewDelegate, UICollectionViewDataSource {
+extension ProductsViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 1
+        return 10
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LessonsCell", for: indexPath) as! LessonsCollectionViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ProductsCell", for: indexPath) as! ProductsCollectionViewCell
         
         return cell
     }

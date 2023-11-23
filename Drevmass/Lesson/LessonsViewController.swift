@@ -1,5 +1,5 @@
 //
-//  FavoritesViewController.swift
+//  ProductViewController.swift
 //  Drevmass
 //
 //  Created by Мерей Булатова on 20.11.2023.
@@ -7,11 +7,11 @@
 
 import UIKit
 
-class FavoritesViewController: UIViewController {
-
+class LessonsViewController: UIViewController {
+    
     //MARK: - UI Elements
-
-    private lazy var favoriteCollectionView: UICollectionView = {
+    
+    private lazy var lessonsCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.itemSize = CGSize(width: 328, height: 316)
@@ -26,53 +26,59 @@ class FavoritesViewController: UIViewController {
         return collectionView
     }()
     
+    //MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
         setupViews()
         setupConstraints()
         
-        favoriteCollectionView.dataSource = self
-        favoriteCollectionView.delegate = self
+        lessonsCollectionView.dataSource = self
+        lessonsCollectionView.delegate = self
     }
 }
 
-private extension FavoritesViewController {
+    //MARK: - Add views & constraints
+
+private extension LessonsViewController {
     
     func setupViews() {
         view.backgroundColor = .white
-        view.addSubview(favoriteCollectionView)
+        view.addSubview(lessonsCollectionView)
         
-        navigationItem.title = "Избранные уроки"
+        navigationItem.title = "Обучающие уроки"
         navigationController?.setDefaultNavigationBarAppearance()
         navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(named: "profile"), style: .plain, target: self, action: #selector(profileVC))
         tabBarController?.tabBar.barTintColor = .appBrown
     }
     
     func setupConstraints() {
-        favoriteCollectionView.snp.makeConstraints { make in
+        lessonsCollectionView.snp.makeConstraints { make in
             make.top.bottom.equalTo(view.safeAreaLayoutGuide)
             make.right.left.equalToSuperview()
         }
     }
     
     @objc func profileVC() {
-        
+        let profileVC = ProfileViewController()
+        profileVC.hidesBottomBarWhenPushed = true
+//        navigationController?.pushViewController(profileVC, animated: true)
+        navigationController?.show(profileVC, sender: true)
+        navigationItem.title = ""
     }
 }
 
      //MARK: - UICollectionViewDelegate & Data Source
 
-extension FavoritesViewController: UICollectionViewDelegate, UICollectionViewDataSource {
+extension LessonsViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 1
+        return 10
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LessonsCell", for: indexPath) as! LessonsCollectionViewCell
         
         return cell
-    }
+    }    
 }
-
