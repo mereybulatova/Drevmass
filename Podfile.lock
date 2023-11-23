@@ -1,0 +1,20 @@
+PODS:
+  - AdvancedPageControl (0.9.0)
+  - SnapKit (5.6.0)
+
+DEPENDENCIES:
+  - AdvancedPageControl
+  - SnapKit
+
+SPEC REPOS:
+  trunk:
+    - AdvancedPageControl
+    - SnapKit
+
+SPEC CHECKSUMS:
+  AdvancedPageControl: 39e3b32b00b2d324c534f8e17cc6c5be9abe84b7
+  SnapKit: e01d52ebb8ddbc333eefe2132acf85c8227d9c25
+
+PODFILE CHECKSUM: 962019782872e5734f35848504b683ad5c179778
+
+COCOAPODS: 1.12.1
