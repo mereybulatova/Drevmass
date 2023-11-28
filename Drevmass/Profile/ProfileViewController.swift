@@ -6,8 +6,13 @@
 //
 
 import UIKit
+import SVProgressHUD
+import Alamofire
+import SwiftyJSON
 
 class ProfileViewController: UIViewController {
+    
+    var userID: Int?
     
     //MARK: - UI Elements
     
@@ -56,35 +61,37 @@ class ProfileViewController: UIViewController {
         return label
     }()
     
-    private lazy var profileButton: UIButton = createButton(title: "Профиль")
+    private lazy var profileButton: UIButton = createProfileButton(title: "Профиль")
     private lazy var profileImageView: UIImageView = createImageView(image: UIImage(named: "profile"))
-    private lazy var lineProfile: UIView = createLineView()
+    private lazy var lineProfile: UIView = createLightGrayView()
     
-    private lazy var notificationsButton: UIButton = createButton(title: "Уведомления")
+    private lazy var notificationsButton: UIButton = createProfileButton(title: "Уведомления")
     private lazy var notificationsImageView: UIImageView = createImageView(image: UIImage(named: "notifications"))
-    private lazy var lineNotifications: UIView = createLineView()
+    private lazy var lineNotifications: UIView = createLightGrayView()
    
-    private lazy var informationButton: UIButton = createButton(title: "Правовая информация")
+    private lazy var informationButton: UIButton = createProfileButton(title: "Правовая информация")
     private lazy var informationImageView: UIImageView = createImageView(image: UIImage(named: "information"))
-    private lazy var lineInformations: UIView = createLineView()
+    private lazy var lineInformations: UIView = createLightGrayView()
    
-    private lazy var supportButton: UIButton = createButton(title: "Служба поддержки")
+    private lazy var supportButton: UIButton = createProfileButton(title: "Служба поддержки")
     private lazy var supportImageView: UIImageView = createImageView(image: UIImage(named: "support"))
-    private lazy var lineSupport: UIView = createLineView()
+    private lazy var lineSupport: UIView = createLightGrayView()
     
-    private lazy var appButton: UIButton = createButton(title: "О приложении")
+    private lazy var appButton: UIButton = createProfileButton(title: "О приложении")
     private lazy var appImageView: UIImageView = createImageView(image: UIImage(named: "app"))
-    private lazy var lineApp: UIView = createLineView()
+    private lazy var lineApp: UIView = createLightGrayView()
     
-    private lazy var feedbackButton: UIButton = createButton(title: "Оставить отзыв")
+    private lazy var feedbackButton: UIButton = createProfileButton(title: "Оставить отзыв")
     private lazy var feedbackImageView: UIImageView = createImageView(image: UIImage(named: "feedback"))
-    private lazy var lineFeedback: UIView = createLineView()
+    private lazy var lineFeedback: UIView = createLightGrayView()
     
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        addUserName()
         setupViews()
         setupConstraints()
+        targetButtons()
     }
 }
 
@@ -245,29 +252,101 @@ private extension ProfileViewController {
 
 private extension ProfileViewController {
     
-    @objc private func logOutButton() {
+    func targetButtons() {
+        profileButton.addTarget(self, action: #selector(secondProfileTapped), for: .touchUpInside)
+        notificationsButton.addTarget(self, action: #selector(notificationsTapped), for: .touchUpInside)
+        informationButton.addTarget(self, action: #selector(informationTapped), for: .touchUpInside)
+        supportButton.addTarget(self, action: #selector(supportTapped), for: .touchUpInside)
+        appButton.addTarget(self, action: #selector(appTapped), for: .touchUpInside)
+    }
+    
+    func addUserName() {
+        SVProgressHUD.show()
+        let headers: HTTPHeaders = ["Authorization": "Bearer \(Storage.sharedInstance.access_token)"]
         
+        AF.request(Urls.USER_URL, method: .get, headers: headers).validate().responseData { response in
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 {
+                let json = JSON(response.data!)
+                let name = json["name"]
+                let email = json["email"]
+                self.userID = json["id"].int
+                self.titleLabel.text = "Привет, \(name.stringValue)!"
+                self.emailLabel.text = email.stringValue
+            } else {
+                SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+
+                var ErrorString = "CONNECTION_ERROR"
+                if let sCode = response.response?.statusCode {
+                    ErrorString = ErrorString + " \(sCode)"
+                }
+                ErrorString = ErrorString + " \(resultString)"
+                SVProgressHUD.showError(withStatus: "\(ErrorString)")
+            }
+        }
     }
     
-    private func createButton(title: String) -> UIButton {
-        let button = UIButton()
-        button.setTitle(title, for: .normal)
-        button.setTitleColor(.appBrown, for: .normal)
-        button.titleLabel?.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        button.titleLabel?.textAlignment = .left
-        button.contentHorizontalAlignment = .left
-        return button
+    @objc private func logOutButton() {
+        showLogoutAlert()
     }
     
-    private func createImageView(image: UIImage?) -> UIImageView {
-        let imageView = UIImageView()
-        imageView.image = image
-        return imageView
+    func showLogoutAlert() {
+        let alert = UIAlertController(title: "Подтверждение", message: "Вы уверены, что хотите выйти из аккаунта?", preferredStyle: .alert)
+        
+        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
+        alert.addAction(cancelAction)
+        
+        let logoutAction = UIAlertAction(title: "Выйти", style: .destructive) { [weak self] _ in
+            UserDefaults.standard.removeObject(forKey: "access_token")
+            self?.logout()
+        }
+        alert.addAction(logoutAction)
+        present(alert, animated: true, completion: nil)
     }
 
-    private func createLineView() -> UIView {
-        let view = UIView()
-        view.backgroundColor = .appLightGray
-        return view
+    func logout() {
+        DispatchQueue.main.async {
+            let rootVC = UINavigationController(rootViewController: OnboardingVC())
+            
+            let appDelegate = UIApplication.shared.delegate as! AppDelegate
+            appDelegate.window?.rootViewController = rootVC
+            appDelegate.window?.makeKeyAndVisible()
+        }
+    }
+    
+    @objc private func secondProfileTapped() {
+        let secondProfileVC = SecondProfileViewController()
+        navigationController?.show(secondProfileVC, sender: true)
+        navigationItem.title = ""
+    }
+    
+    @objc private func notificationsTapped() {
+        let profileNotificationVC = ProfileNotificationsViewController()
+        navigationController?.show(profileNotificationVC, sender: true)
+        navigationItem.title = ""
+    }
+    
+    @objc private func informationTapped() {
+        let infoVC = InformationViewController()
+        navigationController?.show(infoVC, sender: true)
+        navigationItem.title = ""
+    }
+    
+    @objc private func supportTapped() {
+        let supportVC = SupportViewController()
+        navigationController?.show(supportVC, sender: true)
+        navigationItem.title = ""
+    }
+    
+    @objc private func appTapped() {
+        let appVC = AppViewController()
+        navigationController?.show(appVC, sender: true)
+        navigationItem.title = ""
     }
 }

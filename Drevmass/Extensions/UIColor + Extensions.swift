@@ -8,10 +8,10 @@
 import UIKit
 
 extension UIColor {
-    public static var appWhite = UIColor(named: "White")
-    public static var appBrown = UIColor(named: "Brown")
-    public static var appBeige = UIColor(named: "Beige")
-    public static var appGray = UIColor(named: "Gray")
-    public static var appLightGray = UIColor(named: "LightGray")
-    public static var appMediumGray = UIColor(named: "MediumGray")
+    public static var appMainWhite = UIColor(named: "appWhite")
+    public static var appMainBrown = UIColor(named: "appBrown")
+    public static var appMainBeige = UIColor(named: "appBeige")
+    public static var appMainGray = UIColor(named: "appGray")
+    public static var appMainLightGray = UIColor(named: "appLightGray")
+    public static var appMainMediumGray = UIColor(named: "appMediumGray")
 }

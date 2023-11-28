@@ -11,10 +11,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
-    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+    func scene(_ scene: UIScene, 
+               willConnectTo session: UISceneSession,
+               options connectionOptions: UIScene.ConnectionOptions) {
         
         let navController = UINavigationController(rootViewController: UserInfoViewController())
-        
         navController.setDefaultNavigationBarAppearance()
         
         guard let windowScene = (scene as? UIWindowScene) else { return }
@@ -22,16 +23,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window?.rootViewController = navController
         window?.makeKeyAndVisible()
         
-//        if let windowScene = scene as? UIWindowScene {
-//            if let accessToken = UserDefaults.standard.string(forKey: "accessToken") {
-////                Storage.sharedInstance.accessToken = accessToken
-//                
-//                self.window = UIWindow(windowScene: windowScene)
-//                let viewController = TabBarController()
-//                self.window?.rootViewController = viewController
-//                self.window?.makeKeyAndVisible()
-//            }
-//        }
+        if let windowScene = scene as? UIWindowScene {
+            if let accessToken = UserDefaults.standard.string(forKey: "access_token") {
+                Storage.sharedInstance.access_token = accessToken
+                
+                self.window = UIWindow(windowScene: windowScene)
+                (UIApplication.shared.delegate as? AppDelegate)?.self.window = window
+                let viewController = TabBarController()
+                self.window?.rootViewController = viewController
+                self.window?.makeKeyAndVisible()
+            }
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

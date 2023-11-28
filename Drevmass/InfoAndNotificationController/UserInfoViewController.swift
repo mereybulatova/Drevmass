@@ -7,9 +7,14 @@
 
 import UIKit
 import AdvancedPageControl
+import SVProgressHUD
+import SwiftyJSON
+import Alamofire
 
 class UserInfoViewController: UIViewController {
     
+    var selectedGender: Int = 0
+    var selectedActivity: Int = 0
     //MARK: - UI Elements
     
     private lazy var logoImage: UIImageView = {
@@ -88,30 +93,9 @@ class UserInfoViewController: UIViewController {
         return textField
     }()
     
-    private lazy var heightLabel: UILabel = {
-        let label = UILabel()
-        
-        label.text = "Рост"
-        label.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        label.tintColor = .appBrown
-        return label
-    }()
-    
-    private lazy var smLabel: UILabel = {
-        let label = UILabel()
-        
-        label.text = "см"
-        label.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        label.tintColor = .appBrown
-        return label
-    }()
-    
-    private lazy var heightTFView: UIView = {
-        let view = UIView()
-        
-        view.backgroundColor = .appBeige
-        return view
-    }()
+    private lazy var heightLabel: UILabel = createLightLabel(title: "Рост")
+    private lazy var smLabel: UILabel = createLightLabel(title: "см")
+    private lazy var heightTFView: UIView = createBeigeView()
     
     private lazy var weightTextField: UITextField = {
         let textField = TextFieldWithPadding()
@@ -125,39 +109,12 @@ class UserInfoViewController: UIViewController {
         return textField
     }()
     
-    private lazy var weightLabel: UILabel = {
-        let label = UILabel()
-        
-        label.text = "Вес"
-        label.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        label.tintColor = .appBrown
-        return label
-    }()
+    private lazy var weightLabel: UILabel = createLightLabel(title: "Вес")
+    private lazy var kgLabel: UILabel = createLightLabel(title: "кг")
+    private lazy var weightTFView: UIView = createBeigeView()
     
-    private lazy var kgLabel: UILabel = {
-        let label = UILabel()
-        
-        label.text = "кг"
-        label.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        label.tintColor = .appBrown
-        return label
-    }()
-    
-    private lazy var weightTFView: UIView = {
-        let view = UIView()
-        
-        view.backgroundColor = .appBeige
-        return view
-    }()
-    
-    private lazy var dateLabel: UILabel = {
-        let label = UILabel()
-        
-        label.text = "Дата рождения"
-        label.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        label.tintColor = .appBrown
-        return label
-    }()
+    private lazy var dateLabel: UILabel = createLightLabel(title: "Дата рождения")
+    private lazy var dateTFView: UIView = createBeigeView()
     
     private lazy var dateTextField: UITextField = {
         let textField = TextFieldWithPadding()
@@ -174,13 +131,6 @@ class UserInfoViewController: UIViewController {
         let datePick = UIDatePicker()
         datePick.datePickerMode = .date
         return datePick
-    }()
-    
-    private lazy var dateTFView: UIView = {
-        let view = UIView()
-        
-        view.backgroundColor = .appBeige
-        return view
     }()
     
     private lazy var activityLabel: UILabel = {
@@ -285,6 +235,7 @@ class UserInfoViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        InfoForm()
     }
 }
 
@@ -295,7 +246,7 @@ private extension UserInfoViewController {
     func setupViews() {
         view.backgroundColor = .white
         view.addSubviews(
-            logoImage, titleLabel, subtitleLabel, genderLabel, maleButton, femaleButton, heightTextField, heightLabel, smLabel, heightTFView, weightTextField, weightLabel, kgLabel, weightTFView, dateTextField, datePicker, dateLabel, dateTFView, activityLabel, lowButton, middleButton, highButton, nextButton, skipButton, pageControl
+        logoImage, titleLabel, subtitleLabel, genderLabel, maleButton, femaleButton, heightTextField, heightLabel, smLabel, heightTFView, weightTextField, weightLabel, kgLabel, weightTFView, dateTextField, datePicker, dateLabel, dateTFView, activityLabel, lowButton, middleButton, highButton, nextButton, skipButton, pageControl
         )
     }
     
@@ -453,6 +404,52 @@ extension UserInfoViewController {
 
 private extension UserInfoViewController {
     
+    func InfoForm() {
+        let gender = selectedGender
+        let activity = selectedActivity
+        let height = heightTextField.text!
+        let weight = weightTextField.text!
+        let birth = dateTextField.text!
+        
+        SVProgressHUD.show()
+        
+        let infoUrl = Urls.INFORMATION_POST_URL
+        let headers: HTTPHeaders = ["Authorization": "Bearer 627|z1XeN53Ruf8kPhOHg68aS3zhqwzyQlPpdgtRoXZn"]
+        let parameters: [String: Any] = ["gender": gender, "height": height, "weight": weight, "birth": birth, "activity": activity]
+        
+        AF.upload(multipartFormData: { multiPart in
+            for (key, value) in parameters {
+                if let data = "\(value)".data(using: .utf8) {
+                    multiPart.append(data, withName: key)
+                }
+            }
+        }, to: infoUrl, headers: headers).responseDecodable(of: UserInformation.self) { response in
+            
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 {
+                let json = JSON(response.data!)
+                print("JSON: \(json)")
+                if let token = json["access_token"].string {
+                   print("hello")
+                } else {
+                    SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+                }
+            } else {
+                if let statusCode = response.response?.statusCode {
+                    SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
+                } else {
+                    SVProgressHUD.showError(withStatus: "Unknown error")
+                }
+            }
+        }
+    }
+    
     @objc private func genderButtonTapped(sender: UIButton) {
         let genderButtons = [maleButton, femaleButton]
         
@@ -464,6 +461,12 @@ private extension UserInfoViewController {
             sender.isSelected = true
             sender.backgroundColor = .appBeige
             sender.setTitleColor(.appWhite, for: .normal)
+        
+        if sender == maleButton {
+               selectedGender = 0
+           } else if sender == femaleButton {
+               selectedGender = 1
+           }
     }
     
     @objc private func activityButtonTapped(sender: UIButton) {
@@ -474,9 +477,17 @@ private extension UserInfoViewController {
             button.backgroundColor = .appLightGray
             button.setTitleColor(.appBrown, for: .normal)
         }
-            sender.isSelected = true
-            sender.backgroundColor = .appBeige
-            sender.setTitleColor(.appWhite, for: .normal)
+        sender.isSelected = true
+        sender.backgroundColor = .appBeige
+        sender.setTitleColor(.appWhite, for: .normal)
+        
+        if sender == lowButton {
+            selectedActivity = 1
+        } else if sender == middleButton {
+            selectedActivity = 2
+        } else if sender == highButton {
+            selectedActivity = 3
+        }
     }
     
     @objc private func nextButtonTapped() {

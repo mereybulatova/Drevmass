@@ -202,23 +202,23 @@ private extension NotificationViewController {
 
     //MARK: - Add function
 
-private extension NotificationViewController {
+extension NotificationViewController {
     
-    func createWeekdayButton(title: String) -> UIButton {
-        let button = UIButton()
-        
-        button.setTitle(title, for: .normal)
-        button.titleLabel?.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        button.setTitleColor(.black, for: .normal)
-        button.layer.cornerRadius = 20
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor(red: 0.71, green: 0.64, blue: 0.5, alpha: 1).cgColor
-        button.addTarget(self, action: #selector(weekdayButtonTapped(_:)), for: .touchUpInside)
-        return button
-    }
+     func createWeekdayButton(title: String) -> UIButton {
+         let button = UIButton()
+         
+         button.setTitle(title, for: .normal)
+         button.titleLabel?.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
+         button.setTitleColor(.black, for: .normal)
+         button.layer.cornerRadius = 20
+         button.layer.borderWidth = 1
+         button.layer.borderColor = UIColor(red: 0.71, green: 0.64, blue: 0.5, alpha: 1).cgColor
+         button.addTarget(self, action: #selector(weekdayButtonTapped(_:)), for: .touchUpInside)
+         return button
+     }
     
-    @objc private func weekdayButtonTapped(_ sender: UIButton) {
-        if let index = weekdayButtons.firstIndex(of: sender) {
+    @objc public func weekdayButtonTapped(_ sender: UIButton) {
+        if (weekdayButtons.firstIndex(of: sender) != nil) {
             sender.backgroundColor = (sender.backgroundColor == .appBeige) ? .appWhite : .appBeige
         }
     }

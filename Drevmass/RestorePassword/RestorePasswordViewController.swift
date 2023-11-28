@@ -6,6 +6,9 @@
 //
 
 import UIKit
+import SVProgressHUD
+import SwiftyJSON
+import Alamofire
 
 class RestorePasswordViewController: UIViewController {
 
@@ -58,36 +61,17 @@ class RestorePasswordViewController: UIViewController {
         return label
     }()
     
-    private lazy var emailTextField: UITextField = {
-        let textField = TextFieldWithPadding()
-        
-        textField.placeholder = "Введите e-mail"
-        textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        textField.textColor = .appMediumGray
-        textField.borderStyle = .none
-        return textField
-    }()
-    
-    private lazy var emailTFImage: UIImageView = {
-        let imageView = UIImageView()
-        
-        imageView.image = .email
-        return imageView
-    }()
-    
-    private lazy var emailTFView: UIView = {
-        let view = UIView()
-        
-        view.backgroundColor = .appBeige
-        return view
-    }()
+    private lazy var emailTextField: UITextField = createTextField(placeholder: "Введите e-mail", secureText: false)
+    private lazy var emailTFImage: UIImageView = createImageView(image: UIImage(named: "email"))
+    private lazy var emailTFView: UIView = createBeigeView()
     
     private lazy var signInButton: UIButton = {
         let button = UIButton()
         button.backgroundColor = .appBeige
-        button.alpha = 0.5
         button.setTitle("Сбросить", for: .normal)
+        button.alpha = 0.5
         button.configuration?.titleAlignment = .center
+        button.addTarget(self, action: #selector(resetPasswordTapped), for: .touchUpInside)
         button.layer.cornerRadius = 30
         return button
     }()
@@ -98,6 +82,7 @@ class RestorePasswordViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        emailTextField.delegate = self
     }
 }
 
@@ -105,6 +90,7 @@ private extension RestorePasswordViewController {
     
     func setupViews() {
         navigationItem.title = "Вход"
+        navigationController?.setDefaultNavigationBarAppearance()
         
         view.addSubviews(posterImage, backView)
         backView.addSubviews(logoImage, titleLabel, subtitleLabel, emailTextField, emailTFImage, emailTFView, signInButton)
@@ -158,5 +144,67 @@ private extension RestorePasswordViewController {
             make.size.equalTo(CGSize(width: 296, height: 56))
             make.trailing.leading.equalToSuperview().inset(40)
         }
+    }
+}
+
+extension RestorePasswordViewController {
+    
+    @objc func resetPasswordTapped() {
+        let email = emailTextField.text!
+        
+        SVProgressHUD.show()
+        
+        let loginUrl = Urls.FORGET_URL
+        let parameters = ["email": email]
+        AF.upload(multipartFormData: { multiPart in
+            for (key, value) in parameters {
+                multiPart.append(value.data(using: .utf8)!, withName: key)
+            }
+        }, to: loginUrl).responseDecodable(of: Reset.self) { response in
+            
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            if response.response?.statusCode == 200 {
+                let json = JSON(response.data!)
+                print("JSON: \(json)")
+                if let status = json["status"].string {
+                    self.showAlert(title: "Подтверждение", message: "Письмо с ссылкой на восстановление отправлено!")
+                } else {
+                    self.showAlert(title: "Неверный e-mail!", message: "Мы не нашли данный email в базе пользователей")
+                }
+            } else {
+                if let statusCode = response.response?.statusCode {
+                    SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
+                } else {
+                    SVProgressHUD.showError(withStatus: "Unknown error")
+                }
+            }
+        }
+    }
+    
+    func showAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+}
+
+extension RestorePasswordViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let emailText = emailTextField.text ?? ""
+        
+        if emailText.isEmpty {
+            signInButton.isEnabled = false
+            signInButton.alpha = 0.5
+        } else {
+            signInButton.isEnabled = true
+            signInButton.alpha = 1
+        }
+        
+        return true
     }
 }

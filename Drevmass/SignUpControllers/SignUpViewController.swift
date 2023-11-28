@@ -6,6 +6,9 @@
 //
 
 import UIKit
+import SVProgressHUD
+import SwiftyJSON
+import Alamofire
 
 class SignUpViewController: UIViewController {
     
@@ -40,103 +43,21 @@ class SignUpViewController: UIViewController {
         return label
     }()
     
-    private lazy var nameTextField: UITextField = {
-        let textField = TextFieldWithPadding()
-        
-        textField.placeholder = "Ваше имя"
-        textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        textField.textColor = .appMediumGray
-        textField.borderStyle = .none
-        return textField
-    }()
+    private lazy var nameTextField: UITextField = createTextField(placeholder: "Введите имя", secureText: false)
+    private lazy var nameTFImage: UIImageView = createImageView(image: UIImage(named: "person"))
+    private lazy var nameTFView: UIView = createBeigeView()
     
-    private lazy var nameTFImage: UIImageView = {
-        let imageView = UIImageView()
-        
-        imageView.image = .person
-        return imageView
-    }()
+    private lazy var emailTextField: UITextField = createTextField(placeholder: "Введите e-mail", secureText: false)
+    private lazy var emailTFImage: UIImageView = createImageView(image: UIImage(named: "email"))
+    private lazy var emailTFView: UIView = createBeigeView()
     
-    private lazy var nameTFView: UIView = {
-        let view = UIView()
-        
-        view.backgroundColor = .appBeige
-        return view
-    }()
+    private lazy var passwordTextField: UITextField = createTextField(placeholder: "Введите пароль", secureText: false)
+    private lazy var passwordTFImage: UIImageView = createImageView(image: UIImage(named: "password"))
+    private lazy var passwordTFView: UIView = createBeigeView()
     
-    private lazy var emailTextField: UITextField = {
-        let textField = TextFieldWithPadding()
-        
-        textField.placeholder = "Введите e-mail"
-        textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        textField.textColor = .appMediumGray
-        textField.borderStyle = .none
-        return textField
-    }()
-    
-    private lazy var emailTFImage: UIImageView = {
-        let imageView = UIImageView()
-        
-        imageView.image = .email
-        return imageView
-    }()
-    
-    private lazy var emailTFView: UIView = {
-        let view = UIView()
-        
-        view.backgroundColor = .appBeige
-        return view
-    }()
-    
-    private lazy var passwordTextField: UITextField = {
-        let textField = TextFieldWithPadding()
-        
-        textField.placeholder = "Введите пароль"
-        textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        textField.textColor = .appMediumGray
-        textField.borderStyle = .none
-        textField.isSecureTextEntry = true
-        return textField
-    }()
-    
-    private lazy var passwordTFImage: UIImageView = {
-        let imageView = UIImageView()
-        
-        imageView.image = .password
-        return imageView
-    }()
-    
-    private lazy var passwordTFView: UIView = {
-        let view = UIView()
-        
-        view.backgroundColor = .appBeige
-        return view
-    }()
-    
-    private lazy var repeatPasswordTextField: UITextField = {
-        let textField = TextFieldWithPadding()
-        
-        textField.placeholder = "Повторите пароль"
-        textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        textField.textColor = .appMediumGray
-        textField.isSecureTextEntry = true
-        textField.borderStyle = .none
-        return textField
-    }()
-    
-    private lazy var repeatPasswordTFImage: UIImageView = {
-        let imageView = UIImageView()
-        
-        imageView.image = .password
-        return imageView
-    }()
-    
-    private lazy var repeatPasswordTFView: UIView = {
-        let view = UIView()
-        
-        view.backgroundColor = .appBeige
-        return view
-    }()
+    private lazy var repeatPasswordTextField: UITextField = createTextField(placeholder: "Повторите пароль", secureText: false)
+    private lazy var repeatPasswordTFImage: UIImageView = createImageView(image: UIImage(named:"password"))
+    private lazy var repeatPasswordTFView: UIView = createBeigeView()
     
     private lazy var signUpButton: UIButton = {
         let button = UIButton()
@@ -145,6 +66,7 @@ class SignUpViewController: UIViewController {
         button.setTitle("Продолжить", for: .normal)
         button.configuration?.titleAlignment = .center
         button.layer.cornerRadius = 30
+        button.addTarget(self, action: #selector(signUpButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -172,6 +94,12 @@ class SignUpViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        hideKeyboardWhenTappedAround()
+        
+        nameTextField.delegate = self
+        emailTextField.delegate = self
+        passwordTextField.delegate = self
+        repeatPasswordTextField.delegate = self
     }
 }
 
@@ -291,6 +219,54 @@ private extension SignUpViewController {
 
 private extension SignUpViewController {
     
+    @objc func signUpButtonTapped() {
+        let signUpName = nameTextField.text!
+        let signUpEmail = emailTextField.text!
+        let signUpPassword = passwordTextField.text!
+        let confirmPassword = repeatPasswordTextField.text!
+        
+        if signUpPassword == confirmPassword {
+            
+            SVProgressHUD.show()
+            
+            let registrationUrl = Urls.REGISTER_URL
+            let parameters = ["name": signUpName, "email": signUpEmail, "password": signUpPassword, "password_confirmation": confirmPassword]
+            AF.upload(multipartFormData: { multiPart in
+                for (key, value) in parameters {
+                    multiPart.append(value.data(using: .utf8)!, withName: key)
+                }
+            }, to: registrationUrl).responseDecodable(of: SignUpInModel.self) { response in
+                
+                SVProgressHUD.dismiss()
+                var resultString = ""
+                if let data = response.data {
+                    resultString = String(data: data, encoding: .utf8)!
+                    print(resultString)
+                }
+                
+                if response.response?.statusCode == 200 {
+                    let json = JSON(response.data!)
+                    print("JSON: \(json)")
+                    if let token = json["access_token"].string {
+                        // Успешная регистрация
+                        Storage.sharedInstance.access_token = token
+                        UserDefaults.standard.set(token, forKey: "access_token")
+                        self.startUserForm()
+                    } else {
+                        SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+                    }
+                } else {
+                    // Обработка ошибок сервера
+                    if let statusCode = response.response?.statusCode {
+                        SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
+                    } else {
+                        SVProgressHUD.showError(withStatus: "Unknown error")
+                    }
+                }
+            }
+        }
+    }
+    
     func hideKeyboardWhenTappedAround() {
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
         tap.cancelsTouchesInView = false
@@ -305,5 +281,30 @@ private extension SignUpViewController {
         let signUpVC = SignInViewController()
         navigationController?.show(signUpVC, sender: true)
         navigationItem.title = ""
+    }
+    
+    func startUserForm() {
+        let formVC = UserInfoViewController()
+        navigationController?.show(formVC, sender: self)
+        navigationItem.title = ""
+    }
+}
+
+extension SignUpViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let nameText = nameTextField.text ?? ""
+        let emailText = emailTextField.text ?? ""
+        let passwordText = passwordTextField.text ?? ""
+        let confirmPassword = repeatPasswordTextField.text ?? ""
+        
+        if emailText.isEmpty || nameText.isEmpty || passwordText.isEmpty || confirmPassword.isEmpty {
+            signUpButton.isEnabled = false
+            signUpButton.alpha = 0.5
+        } else {
+            signUpButton.isEnabled = true
+            signUpButton.alpha = 1
+        }
+        
+        return true
     }
 }

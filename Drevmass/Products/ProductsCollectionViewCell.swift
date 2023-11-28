@@ -19,6 +19,7 @@ class ProductsCollectionViewCell: UICollectionViewCell {
           label.font = .appFont(ofSize: 18, weight: .regular, font: .Rubik)
           label.textColor = .appBrown
           label.textAlignment = .left
+          label.numberOfLines = 0
           
           return label
       }()
@@ -59,11 +60,18 @@ class ProductsCollectionViewCell: UICollectionViewCell {
       }
   }
 
-  private extension ProductsCollectionViewCell {
+extension ProductsCollectionViewCell {
+    
       func commonInit() {
-          layer.cornerRadius = 35
+          layer.cornerRadius = 15
           layer.borderWidth = 1
           layer.borderColor = UIColor(red: 0.88, green: 0.87, blue: 0.87, alpha: 1).cgColor
+      }
+      
+      func setData(product: Products) {
+          productImageView.sd_setImage(with: URL(string: "http://45.12.74.158/" + product.image_src), placeholderImage: nil)
+          titleLabel.text = product.name
+          costLabel.text = "\(product.price)₽"
       }
       
       func setupViews() {
@@ -75,6 +83,7 @@ class ProductsCollectionViewCell: UICollectionViewCell {
           titleLabel.snp.makeConstraints { make in
               make.top.equalToSuperview().offset(24)
               make.leading.equalToSuperview().inset(24)
+              make.trailing.equalToSuperview().inset(24)
           }
         
           productImageView.snp.makeConstraints { make in

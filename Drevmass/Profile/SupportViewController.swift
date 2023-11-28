@@ -8,22 +8,53 @@
 import UIKit
 
 class SupportViewController: UIViewController {
-
+    
+    private lazy var supportTextField: UITextField = {
+        let textField = TextFieldWithPadding()
+        textField.placeholder = "Расскажите, что не работает?"
+        textField.textColor = .appMediumGray
+        textField.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
+        textField.borderStyle = .none
+        textField.textAlignment = .left
+        return textField
+    }()
+    
+    private lazy var sendButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .appBeige
+        button.setTitle("Отправить", for: .normal)
+        button.configuration?.titleAlignment = .center
+        button.layer.cornerRadius = 30
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupViews()
+        setupConstraints()
+    }
+}
 
-        // Do any additional setup after loading the view.
+private extension SupportViewController {
+    
+    func setupViews() {
+        navigationItem.title = "Служба поддержки"
+    
+        view.backgroundColor = .appWhite
+        view.addSubviews(supportTextField, sendButton)
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    func setupConstraints() {
+        
+        supportTextField.snp.makeConstraints { make in
+            make.edges.equalTo(view.safeAreaLayoutGuide)
+        }
+        
+        sendButton.snp.makeConstraints { make in
+            make.bottom.equalToSuperview().inset(35)
+            make.left.right.equalToSuperview().inset(24)
+            make.height.equalTo(56)
+        }
+        
     }
-    */
-
 }

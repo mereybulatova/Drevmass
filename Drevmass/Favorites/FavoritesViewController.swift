@@ -6,8 +6,13 @@
 //
 
 import UIKit
+import SVProgressHUD
+import Alamofire
+import SwiftyJSON
 
 class FavoritesViewController: UIViewController {
+    
+    var favorite: [Lessons] = []
 
     //MARK: - UI Elements
 
@@ -26,9 +31,12 @@ class FavoritesViewController: UIViewController {
         return collectionView
     }()
     
+    override func viewWillAppear(_ animated: Bool) {
+        downloadFavorites()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
         setupViews()
         setupConstraints()
         
@@ -37,7 +45,49 @@ class FavoritesViewController: UIViewController {
     }
 }
 
-private extension FavoritesViewController {
+extension FavoritesViewController {
+    
+    func downloadFavorites() {
+        self.favorite.removeAll()
+        
+        SVProgressHUD.show()
+        
+        let headers: HTTPHeaders = ["Authorization": "Bearer \(Storage.sharedInstance.access_token)"]
+        
+        AF.request(Urls.FAVORITE_URL, method: .get, headers: headers).responseData {
+            response in
+            
+            SVProgressHUD.dismiss()
+            
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 {
+                let json = JSON(response.data!)
+                print("JSON: \(json)")
+                
+                if let array = json.array {
+                    for item in array {
+                        let lesson = Lessons(json: item)
+                        self.favorite.append(lesson)
+                    }
+                    self.favoriteCollectionView.reloadData()
+                } else {
+                    SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+                }
+            } else {
+                var ErrorString = "CONNECTION_ERROR"
+                if let sCode = response.response?.statusCode {
+                    ErrorString = ErrorString + "\(sCode)"
+                }
+                ErrorString = ErrorString + "\(resultString)"
+                SVProgressHUD.showError(withStatus: "\(ErrorString)")
+            }
+        }
+    }
     
     func setupViews() {
         view.backgroundColor = .white
@@ -57,7 +107,10 @@ private extension FavoritesViewController {
     }
     
     @objc func profileVC() {
-        
+        let profileVC = ProfileViewController()
+        profileVC.hidesBottomBarWhenPushed = true
+        navigationController?.show(profileVC, sender: true)
+        navigationItem.title = ""
     }
 }
 
@@ -66,12 +119,12 @@ private extension FavoritesViewController {
 extension FavoritesViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 1
+        return favorite.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LessonsCell", for: indexPath) as! LessonsCollectionViewCell
-        
+        cell.setData(lesson: favorite[indexPath.row])
         return cell
     }
 }

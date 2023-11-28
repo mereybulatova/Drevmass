@@ -6,6 +6,10 @@
 //
 
 import UIKit
+import SnapKit
+import SVProgressHUD
+import SwiftyJSON
+import Alamofire
 
 class SignInViewController: UIViewController {
     
@@ -58,54 +62,13 @@ class SignInViewController: UIViewController {
         return label
     }()
     
-    private lazy var emailTextField: UITextField = {
-        let textField = TextFieldWithPadding()
-        
-        textField.placeholder = "Введите e-mail"
-        textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        textField.textColor = .appMediumGray
-        textField.borderStyle = .none
-        return textField
-    }()
+    private lazy var emailTextField: UITextField = createTextField(placeholder: "Введите e-mail", secureText: false)
+    private lazy var emailTFImage: UIImageView = createImageView(image: UIImage(named: "email"))
+    private lazy var emailTFView: UIView = createBeigeView()
     
-    private lazy var emailTFImage: UIImageView = {
-        let imageView = UIImageView()
-        
-        imageView.image = .email
-        return imageView
-    }()
-    
-    private lazy var emailTFView: UIView = {
-        let view = UIView()
-        
-        view.backgroundColor = .appBeige
-        return view
-    }()
-    
-    private lazy var passwordTextField: UITextField = {
-        let textField = TextFieldWithPadding()
-        
-        textField.placeholder = "Введите пароль"
-        textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        textField.textColor = .appMediumGray
-        textField.isSecureTextEntry = true
-        textField.borderStyle = .none
-        return textField
-    }()
-    
-    private lazy var passwordTFImage: UIImageView = {
-        let imageView = UIImageView()
-        
-        imageView.image = .password
-        return imageView
-    }()
-    
-    private lazy var passwordTFView: UIView = {
-        let view = UIView()
-        
-        view.backgroundColor = .appBeige
-        return view
-    }()
+    private lazy var passwordTextField: UITextField = createTextField(placeholder: "Введите пароль", secureText: true)
+    private lazy var passwordTFImage: UIImageView = createImageView(image: UIImage(named: "password"))
+    private lazy var passwordTFView: UIView = createBeigeView()
     
     private lazy var signInButton: UIButton = {
         let button = UIButton()
@@ -113,6 +76,7 @@ class SignInViewController: UIViewController {
         button.alpha = 0.5
         button.setTitle("Войти", for: .normal)
         button.configuration?.titleAlignment = .center
+        button.addTarget(self, action: #selector(signInButtonTapped), for: .touchUpInside)
         button.layer.cornerRadius = 30
         return button
     }()
@@ -157,23 +121,28 @@ class SignInViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        
+        emailTextField.delegate = self
+        passwordTextField.delegate = self
     }
 }
 
 //MARK: - Add Views & Constraints
 
-private extension SignInViewController {
+ extension SignInViewController {
     
     func setupViews() {
         navigationItem.title = "Вход"
         
         view.addSubviews(posterImage, backView)
+        
         backView.addSubviews(
             logoImage, titleLabel, subtitleLabel, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, signInButton, signUpButton, forgetPasswordLabel, forgetPasswordButton
         )
     }
     
     func setupConstraints() {
+        
         posterImage.snp.makeConstraints { make in
             make.trailing.leading.top.equalToSuperview()
             make.height.equalTo(321)
@@ -282,5 +251,68 @@ private extension SignInViewController {
         let restoreVC = RestorePasswordViewController()
         navigationController?.show(restoreVC, sender: self)
         navigationItem.title = ""
+    }
+    
+    @objc func signInButtonTapped() {
+        let email = emailTextField.text!
+        let password = passwordTextField.text!
+        
+        SVProgressHUD.show()
+        
+        let loginUrl = Urls.LOGIN_URL
+        let parameters = ["email": email, "password": password]
+        AF.upload(multipartFormData: { multiPart in
+            for (key, value) in parameters {
+                multiPart.append(value.data(using: .utf8)!, withName: key)
+            }
+        }, to: loginUrl).responseDecodable(of: SignUpInModel.self) { response in
+            
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 {
+                let json = JSON(response.data!)
+                print("JSON: \(json)")
+                if let token = json["access_token"].string {
+                    Storage.sharedInstance.access_token = token
+                    UserDefaults.standard.set(token, forKey: "access_token")
+                    self.startApp()
+                } else {
+                    SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+                }
+            } else {
+                if let statusCode = response.response?.statusCode {
+                    SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
+                } else {
+                    SVProgressHUD.showError(withStatus: "Unknown error")
+                }
+            }
+        }
+    }
+    
+    func startApp() {
+        let tabBar = TabBarController()
+        tabBar.modalPresentationStyle = .fullScreen
+        self.present(tabBar, animated: true)
+    }
+}
+
+extension SignInViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let emailText = emailTextField.text ?? ""
+        let passwordText = passwordTextField.text ?? ""
+        
+        if emailText.isEmpty || passwordText.isEmpty {
+            signInButton.isEnabled = false
+            signInButton.alpha = 0.5
+        } else {
+            signInButton.isEnabled = true
+            signInButton.alpha = 1
+        }
+        return true
     }
 }

@@ -8,6 +8,11 @@ target 'Drevmass' do
   # Pods for Drevmass
     pod 'SnapKit'
     pod 'AdvancedPageControl'
+    pod 'Alamofire'
+    pod 'SDWebImage'
+    pod 'SwiftyJSON'
+    pod 'SVProgressHUD'
+    pod 'YouTubePlayer'
 
 # Setup target iOS version for all pods after install
 post_install do |installer|

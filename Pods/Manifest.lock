@@ -1,20 +1,44 @@
 PODS:
   - AdvancedPageControl (0.9.0)
+  - Alamofire (5.8.1)
+  - SDWebImage (5.18.5):
+    - SDWebImage/Core (= 5.18.5)
+  - SDWebImage/Core (5.18.5)
   - SnapKit (5.6.0)
+  - SVProgressHUD (2.3.1):
+    - SVProgressHUD/Core (= 2.3.1)
+  - SVProgressHUD/Core (2.3.1)
+  - SwiftyJSON (5.0.1)
+  - YouTubePlayer (0.7.2)
 
 DEPENDENCIES:
   - AdvancedPageControl
+  - Alamofire
+  - SDWebImage
   - SnapKit
+  - SVProgressHUD
+  - SwiftyJSON
+  - YouTubePlayer
 
 SPEC REPOS:
   trunk:
     - AdvancedPageControl
+    - Alamofire
+    - SDWebImage
     - SnapKit
+    - SVProgressHUD
+    - SwiftyJSON
+    - YouTubePlayer
 
 SPEC CHECKSUMS:
   AdvancedPageControl: 39e3b32b00b2d324c534f8e17cc6c5be9abe84b7
+  Alamofire: 3ca42e259043ee0dc5c0cdd76c4bc568b8e42af7
+  SDWebImage: 7ac2b7ddc5e8484c79aa90fc4e30b149d6a2c88f
   SnapKit: e01d52ebb8ddbc333eefe2132acf85c8227d9c25
+  SVProgressHUD: 4837c74bdfe2e51e8821c397825996a8d7de6e22
+  SwiftyJSON: 2f33a42c6fbc52764d96f13368585094bfd8aa5e
+  YouTubePlayer: 2b5f2830d8f9b2cde942083211291e382c9e6bd5
 
-PODFILE CHECKSUM: 962019782872e5734f35848504b683ad5c179778
+PODFILE CHECKSUM: 0d24f2f045f9e7bd8e47f66b60a0904968c011a6
 
 COCOAPODS: 1.12.1
