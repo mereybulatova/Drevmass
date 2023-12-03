@@ -15,6 +15,28 @@ class SignInViewController: UIViewController {
     
     //MARK: - UI Elements
     
+    private lazy var scrollView = {
+        let sv = UIScrollView()
+        sv.bounces = false
+        sv.contentInsetAdjustmentBehavior = .never
+        sv.showsVerticalScrollIndicator = false
+        sv.showsHorizontalScrollIndicator = false
+        sv.frame = view.bounds
+        sv.contentSize = contentSize
+        sv.backgroundColor = .white
+        return sv
+    }()
+    
+    private lazy var contentView: UIView = {
+        let view = UIView()
+        view.frame.size = contentSize
+        return view
+    }()
+    
+    private var contentSize: CGSize {
+        CGSize(width: view.frame.width, height: view.frame.height + 100)
+    }
+    
     private lazy var posterImage: UIImageView = {
         let imageView = UIImageView()
         
@@ -121,21 +143,23 @@ class SignInViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        hideKeyboardWhenTappedAround()
         
         emailTextField.delegate = self
         passwordTextField.delegate = self
     }
 }
 
-//MARK: - Add Views & Constraints
+//MARK: - Views & Constraints
 
  extension SignInViewController {
     
     func setupViews() {
         navigationItem.title = "Вход"
         
-        view.addSubviews(posterImage, backView)
-        
+        view.addSubviews(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubviews(posterImage, backView)
         backView.addSubviews(
             logoImage, titleLabel, subtitleLabel, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, signInButton, signUpButton, forgetPasswordLabel, forgetPasswordButton
         )
@@ -227,7 +251,7 @@ class SignInViewController: UIViewController {
     }
 }
 
-//MARK: - Add func
+//MARK: - Functions
 
 private extension SignInViewController {
     
@@ -300,6 +324,8 @@ private extension SignInViewController {
         self.present(tabBar, animated: true)
     }
 }
+
+//MARK: - TextField extensions
 
 extension SignInViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {

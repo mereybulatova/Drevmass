@@ -52,7 +52,8 @@ class OnboardingCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        commonInit()
+        setupViews()
+        setupConstraints()
     }
     
     required init?(coder: NSCoder) {
@@ -67,21 +68,15 @@ class OnboardingCell: UICollectionViewCell {
     }
 }
 
-     //MARK: - Set up views
+//MARK: - Set up views
 
-private extension OnboardingCell {
-    func commonInit() {
-        setupViews()
-        setupConstraints()
-    }
-    
+private extension OnboardingCell {    
     func setupViews() {
         contentView.addSubviews(slidesImage, logoImage, titleLabel, subtitleLabel)
-        contentView.backgroundColor = .white
+        contentView.backgroundColor = .appOnboardingWhite
     }
     
     func setupConstraints() {
-        
         logoImage.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(56)
             make.centerX.equalToSuperview()

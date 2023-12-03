@@ -46,7 +46,7 @@ class LessonsViewController: UIViewController, LessonProtocol {
     }
 }
 
-    //MARK: - Add views & constraints
+//MARK: - Views & constraints
 private extension LessonsViewController {
     func setupViews() {
         view.backgroundColor = .white
@@ -64,7 +64,10 @@ private extension LessonsViewController {
             make.right.left.equalToSuperview()
         }
     }
+}
     
+//MARK: - Functions
+private extension LessonsViewController {
     @objc func profileVC() {
         let profileVC = ProfileViewController()
         profileVC.hidesBottomBarWhenPushed = true
@@ -113,7 +116,7 @@ private extension LessonsViewController {
     }
 }
 
-     //MARK: - UICollectionViewDelegate & Data Source
+//MARK: - UICollectionViewDelegate & Data Source
 extension LessonsViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -132,7 +135,7 @@ extension LessonsViewController: UICollectionViewDelegate, UICollectionViewDataS
     }
 }
 
-     //MARK: - LessonProtocol
+//MARK: - LessonProtocol
 extension LessonsViewController {
    
     func lessonDidSelect(lesson: Lessons) {

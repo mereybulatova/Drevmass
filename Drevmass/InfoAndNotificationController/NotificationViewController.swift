@@ -133,7 +133,7 @@ class NotificationViewController: UIViewController {
     }
 }
 
-    //MARK: - Add views & constraints
+//MARK: - Views & constraints
 
 private extension NotificationViewController {
     
@@ -200,7 +200,7 @@ private extension NotificationViewController {
     }
 }
 
-    //MARK: - Add function
+//MARK: - Function
 
 extension NotificationViewController {
     

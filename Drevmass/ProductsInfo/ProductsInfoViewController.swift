@@ -11,6 +11,7 @@ class ProductsInfoViewController: UIViewController {
     
     var products = Products()
     
+    //MARK: UI Elements
     private lazy var productScrollView = {
         let sv = UIScrollView()
         sv.bounces = false
@@ -136,6 +137,7 @@ class ProductsInfoViewController: UIViewController {
         return button
     }()
 
+    //MARK: - Lifecycle
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: animated)
@@ -154,8 +156,8 @@ class ProductsInfoViewController: UIViewController {
     }
 }
 
+//MARK: Views & Constraints
 extension ProductsInfoViewController {
-    
     func setupViews() {
         view.addSubviews(productScrollView, howToUseButton)
         productScrollView.addSubview(contentView)
@@ -230,6 +232,7 @@ extension ProductsInfoViewController {
     }
 }
 
+//MARK: Functions
 extension ProductsInfoViewController {
     
     @objc func profileVC() {

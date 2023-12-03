@@ -11,13 +11,14 @@ import SDWebImage
 import Alamofire
 import SVProgressHUD
 
+//MARK: - Lesson Protocol
 protocol LessonProtocol {
     func lessonDidSelect(lesson: Lessons)
 }
 
 class LessonsCollectionViewCell: UICollectionViewCell {
     
-    var lesson = Lessons()
+    var lessons = Lessons()
     
     public let identifier = "LessonsCell"
     
@@ -80,7 +81,6 @@ class LessonsCollectionViewCell: UICollectionViewCell {
     }()
     
     //MARK: - Init
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
         commonInit()
@@ -93,76 +93,8 @@ class LessonsCollectionViewCell: UICollectionViewCell {
     }
 }
 
+//MARK: - Views & Constraints
 extension LessonsCollectionViewCell {
-    
-    func commonInit() {
-           layer.cornerRadius = 15
-           layer.borderWidth = 1
-           layer.borderColor = UIColor(red: 0.88, green: 0.87, blue: 0.87, alpha: 1).cgColor
-       }
-    
-    func formatTime(durationInSeconds: Int) -> String {
-        let minutes = durationInSeconds / 60
-        let seconds = durationInSeconds % 60
-        return String(format: "%d:%02d", minutes, seconds)
-    }
-    
-    func setData(lesson: Lessons) {
-        lessonImageView.sd_setImage(with: URL(string: "http://45.12.74.158/" + lesson.image_src), placeholderImage: nil)
-        lessonLabel.text = lesson.name
-        descriptionLabel.text = lesson.title
-        timeLabel.text = "\(lesson.duration / 60)"
-        
-        let durationInSeconds = lesson.duration
-        let formattedTime = formatTime(durationInSeconds: durationInSeconds)
-        timeLabel.text = formattedTime
-    }
-    
-    @objc func addToFavorite() {
-        var method = HTTPMethod.post
-        if (lesson.favorite != 0) {
-            method = .delete
-        }
-        
-        SVProgressHUD.show()
-        
-        let headers: HTTPHeaders = [
-            "Authorization": "Bearer \(Storage.sharedInstance.access_token)"
-        ]
-        
-        let parameters = ["lesson_id": lesson.id] as [String : Any]
-        
-        AF.request(Urls.FAVORITE_URL, method: method,/* parameters: parameters,*/ encoding: JSONEncoding.default, headers: headers).responseData { response in
-            
-            SVProgressHUD.dismiss()
-            var resultString = ""
-            if let data = response.data {
-                resultString = String(data: data, encoding: .utf8)!
-                print(resultString)
-            }
-            
-            if response.response?.statusCode == 200 || response.response?.statusCode == 201 {
-                self.lesson.favorite = 1
-                self.buttonsSettings()
-            } else {
-                var ErrorString = "CONNECTION_ERROR"
-                if let sCode = response.response?.statusCode {
-                    ErrorString = ErrorString + " \(sCode)"
-                }
-                ErrorString = ErrorString + " \(resultString)"
-                SVProgressHUD.showError(withStatus: "\(ErrorString)")
-            }
-        }
-    }
-    
-    func buttonsSettings() {
-        if (lesson.favorite == 1) {
-            favoriteButton.setImage(UIImage(named: "favoriteSelectedLessons"), for: .normal)
-        } else {
-            favoriteButton.setImage(UIImage(named: "favoriteLessons"), for: .normal)
-        }
-    }
-
     func setupViews() {
         contentView.backgroundColor = .appWhite
         contentView.addSubviews(lessonLabel, favoriteButton, descriptionLabel, lessonImageView, playButton, timeLabel)
@@ -201,5 +133,73 @@ extension LessonsCollectionViewCell {
             make.leading.bottom.equalToSuperview().inset(24)
             make.width.equalTo(46)
         }
+    }
+}
+
+//MARK: - Functions
+extension LessonsCollectionViewCell {
+    func commonInit() {
+           layer.cornerRadius = 15
+           layer.borderWidth = 1
+           layer.borderColor = UIColor(red: 0.88, green: 0.87, blue: 0.87, alpha: 1).cgColor
+       }
+    
+    func formatTime(durationInSeconds: Int) -> String {
+        let minutes = durationInSeconds / 60
+        let seconds = durationInSeconds % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    func setData(lesson: Lessons) {
+        lessonImageView.sd_setImage(with: URL(string: "http://45.12.74.158/" + lesson.image_src), placeholderImage: nil)
+        lessonLabel.text = lesson.name
+        descriptionLabel.text = lesson.title
+        timeLabel.text = "\(lesson.duration / 60)"
+        
+        let durationInSeconds = lesson.duration
+        let formattedTime = formatTime(durationInSeconds: durationInSeconds)
+        timeLabel.text = formattedTime
+    }
+    
+    @objc func addToFavorite() {
+        let method = HTTPMethod.post
+        let actionString = "add"
+        
+        SVProgressHUD.show()
+        let headers: HTTPHeaders = [
+            "Authorization": "Bearer \(Storage.sharedInstance.access_token)"
+        ]
+        let parameters = ["lesson_id": 1, "action": actionString] as [String : Any]
+        
+        AF.upload(multipartFormData: { multiPart in
+            for (key, value) in parameters {
+                if let data = "\(value)".data(using: .utf8) {
+                    multiPart.append(data, withName: key)
+                }
+            }
+        }, to: Urls.FAVORITE_URL, method: method, headers: headers).responseDecodable(of: Reset.self) { response in
+            
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 {
+                self.buttonsSettings()
+            } else {
+                var ErrorString = "CONNECTION_ERROR"
+                if let sCode = response.response?.statusCode {
+                    ErrorString = ErrorString + " \(sCode)"
+                }
+                ErrorString = ErrorString + " \(resultString)"
+                SVProgressHUD.showError(withStatus: "\(ErrorString)")
+            }
+        }
+    }
+    
+   public func buttonsSettings() {
+            favoriteButton.setImage(UIImage(named: "favoriteSelectedLessons"), for: .normal)
     }
 }

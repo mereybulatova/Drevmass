@@ -9,6 +9,7 @@ import UIKit
 
 class AppViewController: UIViewController {
     
+    //MARK: - UI Elements
     private lazy var logoImageView: UIImageView = {
         let iv = UIImageView()
         iv.image = .logoOnboarding
@@ -43,6 +44,7 @@ class AppViewController: UIViewController {
         return label
     }()
     
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
@@ -50,6 +52,7 @@ class AppViewController: UIViewController {
     }
 }
 
+//MARK: Views & Constraints
 extension AppViewController {
     
     func setupViews() {
@@ -60,7 +63,6 @@ extension AppViewController {
     }
     
     func setupConstraints() {
-        
         logoImageView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(270)
             make.centerX.equalToSuperview()

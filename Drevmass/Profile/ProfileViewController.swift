@@ -9,12 +9,34 @@ import UIKit
 import SVProgressHUD
 import Alamofire
 import SwiftyJSON
+import StoreKit
 
-class ProfileViewController: UIViewController {
+class ProfileViewController: UIViewController, UIGestureRecognizerDelegate {
     
     var userID: Int?
     
     //MARK: - UI Elements
+    private lazy var scrollView = {
+        let sv = UIScrollView()
+        sv.bounces = false
+        sv.contentInsetAdjustmentBehavior = .never
+        sv.showsVerticalScrollIndicator = false
+        sv.showsHorizontalScrollIndicator = false
+        sv.frame = view.bounds
+        sv.contentSize = contentSize
+        sv.backgroundColor = .white
+        return sv
+    }()
+    
+    private lazy var contentView: UIView = {
+        let view = UIView()
+        view.frame.size = contentSize
+        return view
+    }()
+    
+    private var contentSize: CGSize {
+        CGSize(width: view.frame.width, height: view.frame.height + 100)
+    }
     
     private lazy var posterImage: UIImageView = {
         let imageView = UIImageView()
@@ -85,6 +107,7 @@ class ProfileViewController: UIViewController {
     private lazy var feedbackImageView: UIImageView = createImageView(image: UIImage(named: "feedback"))
     private lazy var lineFeedback: UIView = createLightGrayView()
     
+    //MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -95,11 +118,15 @@ class ProfileViewController: UIViewController {
     }
 }
 
+//MARK: - Views & Constraints
+
 private extension ProfileViewController {
     
     func setupViews() {
         view.backgroundColor = .appWhite
-        view.addSubviews(posterImage, backView)
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubviews(posterImage, backView)
         backView.addSubviews(logoImage, titleLabel, emailLabel, profileButton, profileImageView, lineProfile, notificationsButton, notificationsImageView, lineNotifications, informationButton, informationImageView, lineInformations, supportButton, supportImageView, lineSupport, appButton, appImageView, lineApp, feedbackButton, feedbackImageView, lineFeedback)
         
         navigationItem.title = "Профиль"
@@ -249,6 +276,7 @@ private extension ProfileViewController {
     }
 }
 
+//MARK: - Functions
 
 private extension ProfileViewController {
     
@@ -258,6 +286,7 @@ private extension ProfileViewController {
         informationButton.addTarget(self, action: #selector(informationTapped), for: .touchUpInside)
         supportButton.addTarget(self, action: #selector(supportTapped), for: .touchUpInside)
         appButton.addTarget(self, action: #selector(appTapped), for: .touchUpInside)
+        feedbackButton.addTarget(self, action: #selector(feedbackTapped), for: .touchUpInside)
     }
     
     func addUserName() {
@@ -348,5 +377,8 @@ private extension ProfileViewController {
         let appVC = AppViewController()
         navigationController?.show(appVC, sender: true)
         navigationItem.title = ""
+    }
+    
+    @objc private func feedbackTapped() {
     }
 }

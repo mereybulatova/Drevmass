@@ -6,8 +6,15 @@
 //
 
 import UIKit
+import Alamofire
+import SwiftyJSON
+import SVProgressHUD
 
 class ProfileNotificationsViewController: UIViewController {
+    //MARK: - Properties
+    
+    var userID: Int?
+    var selectedDays: Int = 0
     
     //MARK: - UI Elements
     
@@ -74,13 +81,13 @@ class ProfileNotificationsViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        getNotificationInfo()
     }
 }
 
-    //MARK: - Add views & constraints
+    //MARK: - Views & constraints
 
 private extension ProfileNotificationsViewController {
-    
     func setupViews() {
         navigationItem.title = "Настройка уведомлений"
         
@@ -120,9 +127,45 @@ private extension ProfileNotificationsViewController {
     }
 }
 
-//MARK: - Add function
+//MARK: - Function
 
 extension ProfileNotificationsViewController {
+    
+    func getNotificationInfo() {
+        
+        SVProgressHUD.show()
+        let headers: HTTPHeaders = ["Authorization": "Bearer \(Storage.sharedInstance.access_token)"]
+        AF.request(Urls.USER_INFORMATION_URL, method: .get, headers: headers).responseData { response in
+        
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 {
+                let json = JSON(response.data!)
+                let monday = json ["day"]["monday"]
+                let tuesday = json ["day"]["tuesday"]
+                let wednesday = json ["day"]["wednesday"]
+                let thursday = json ["day"]["thursday"]
+                let friday = json ["day"]["friday"]
+                let saturday = json ["day"]["saturday"]
+                let sunday = json ["day"]["sunday"]
+                self.userID = json ["id"].int
+            } else {
+                SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+
+                var ErrorString = "CONNECTION_ERROR"
+                if let sCode = response.response?.statusCode {
+                    ErrorString = ErrorString + " \(sCode)"
+                }
+                ErrorString = ErrorString + " \(resultString)"
+                SVProgressHUD.showError(withStatus: "\(ErrorString)")
+            }
+        }
+    }
     
     public func createWeekdayButton(title: String) -> UIButton {
          let button = UIButton()
@@ -138,7 +181,7 @@ extension ProfileNotificationsViewController {
      }
     
     @objc public func weekdayButtonTapped(_ sender: UIButton) {
-        if (weekdayButtons.firstIndex(of: sender) != nil) {
+        if let index = weekdayButtons.firstIndex(of: sender) {
             sender.backgroundColor = (sender.backgroundColor == .appBeige) ? .appWhite : .appBeige
         }
     }

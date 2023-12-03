@@ -147,7 +147,7 @@ class OnboardingVC: UIViewController {
     }
 }
 
-    //MARK: - Set up views
+//MARK: - Set up views
 
 private extension OnboardingVC {
     func setupViews() {
@@ -191,7 +191,7 @@ private extension OnboardingVC {
     }
 }
 
-    //MARK: - UI Collection View
+//MARK: - CollectionView
 
 extension OnboardingVC: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -233,7 +233,7 @@ extension OnboardingVC: UICollectionViewDataSource, UICollectionViewDelegate {
     }
 }
 
-        //MARK: - Add objc functions
+//MARK: - Functions
 
 extension OnboardingVC {
     

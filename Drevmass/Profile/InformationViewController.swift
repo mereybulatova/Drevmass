@@ -8,6 +8,8 @@
 import UIKit
 
 class InformationViewController: UIViewController {
+    
+    //MARK: - UI Elements
 
     private lazy var mainInfoLabel: UILabel = {
         let label = UILabel()
@@ -26,6 +28,7 @@ class InformationViewController: UIViewController {
         return label
     }()
     
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
@@ -33,6 +36,7 @@ class InformationViewController: UIViewController {
     }
 }
 
+//MARK: Views & Constraints
 private extension InformationViewController {
     
     func setupViews() {

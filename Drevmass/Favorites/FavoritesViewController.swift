@@ -31,6 +31,7 @@ class FavoritesViewController: UIViewController {
         return collectionView
     }()
     
+    //MARK: - Lifecycle
     override func viewWillAppear(_ animated: Bool) {
         downloadFavorites()
     }
@@ -45,10 +46,10 @@ class FavoritesViewController: UIViewController {
     }
 }
 
+//MARK: - Functions
 extension FavoritesViewController {
     
     func downloadFavorites() {
-        self.favorite.removeAll()
         
         SVProgressHUD.show()
         
@@ -114,8 +115,7 @@ extension FavoritesViewController {
     }
 }
 
-     //MARK: - UICollectionViewDelegate & Data Source
-
+//MARK: - UICollectionViewDelegate & Data Source
 extension FavoritesViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -126,6 +126,17 @@ extension FavoritesViewController: UICollectionViewDelegate, UICollectionViewDat
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "LessonsCell", for: indexPath) as! LessonsCollectionViewCell
         cell.setData(lesson: favorite[indexPath.row])
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        lessonDidSelect(lesson: favorite[indexPath.row])
+    }
+    
+    func lessonDidSelect(lesson: Lessons) {
+        let lessonInfoVC = LessonInfoViewController()
+        lessonInfoVC.lesson = lesson
+        navigationController?.show(lessonInfoVC, sender: self)
     }
 }
 

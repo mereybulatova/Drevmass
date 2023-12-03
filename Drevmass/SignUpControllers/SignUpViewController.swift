@@ -14,6 +14,28 @@ class SignUpViewController: UIViewController {
     
     //MARK: - UI Elements
     
+    private lazy var scrollView = {
+        let sv = UIScrollView()
+        sv.bounces = false
+        sv.contentInsetAdjustmentBehavior = .never
+        sv.showsVerticalScrollIndicator = false
+        sv.showsHorizontalScrollIndicator = false
+        sv.frame = view.bounds
+        sv.contentSize = contentSize
+        sv.backgroundColor = .white
+        return sv
+    }()
+    
+    private lazy var contentView: UIView = {
+        let view = UIView()
+        view.frame.size = contentSize
+        return view
+    }()
+    
+    private var contentSize: CGSize {
+        CGSize(width: view.frame.width, height: view.frame.height + 100)
+    }
+    
     private lazy var logoImage: UIImageView = {
         let imageView = UIImageView()
         
@@ -109,8 +131,11 @@ private extension SignUpViewController {
     
     func setupViews() {
         navigationItem.title = "Регистрация"
+        
         view.backgroundColor = .appWhite
-        view.addSubviews(
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubviews(
             logoImage, titleLabel, subtitleLabel, nameTextField, nameTFImage, nameTFView, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, repeatPasswordTextField, repeatPasswordTFImage, repeatPasswordTFView, signUpButton, signInLabel, signInButton
         )
     }
@@ -217,6 +242,8 @@ private extension SignUpViewController {
     }
 }
 
+//MARK: - Functions
+
 private extension SignUpViewController {
     
     @objc func signUpButtonTapped() {
@@ -289,6 +316,8 @@ private extension SignUpViewController {
         navigationItem.title = ""
     }
 }
+
+//MARK: - TextField extensions
 
 extension SignUpViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {

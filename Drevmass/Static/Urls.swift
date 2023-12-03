@@ -21,5 +21,7 @@ class Urls {
     static let PRODUCTS_URL = BASE_URL + "products"
     static let FAVORITE_URL = BASE_URL + "favorites"
     static let USER_URL = BASE_URL + "user"
+    static let USER_INFORMATION_URL = BASE_URL + "user/information"
     static let INFORMATION_POST_URL = BASE_URL + "information"
+    static let SUPPORT_URL = BASE_URL + "supports"
 }

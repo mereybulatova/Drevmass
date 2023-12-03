@@ -6,16 +6,22 @@
 //
 
 import UIKit
+import SVProgressHUD
+import Alamofire
+import SwiftyJSON
 
 class SupportViewController: UIViewController {
     
-    private lazy var supportTextField: UITextField = {
-        let textField = TextFieldWithPadding()
-        textField.placeholder = "Расскажите, что не работает?"
-        textField.textColor = .appMediumGray
+    //MARK: UI Elements
+    private lazy var supportTextField: UITextView = {
+        let textField = UITextView()
+        textField.isEditable = true
+        textField.text = "Расскажите, что не работает?"
+        textField.textColor = .appMainBrown
         textField.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
         textField.borderStyle = .none
         textField.textAlignment = .left
+        textField.sizeToFit()
         return textField
     }()
     
@@ -25,16 +31,20 @@ class SupportViewController: UIViewController {
         button.setTitle("Отправить", for: .normal)
         button.configuration?.titleAlignment = .center
         button.layer.cornerRadius = 30
+        button.addTarget(self, action: #selector(sendToSupportTapped), for: .touchUpInside)
         return button
     }()
     
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        hideKeyboardWhenTappedAround()
     }
 }
 
+//MARK: - Views & Constraints
 private extension SupportViewController {
     
     func setupViews() {
@@ -47,7 +57,9 @@ private extension SupportViewController {
     func setupConstraints() {
         
         supportTextField.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
+            make.right.left.equalToSuperview().inset(20)
+            make.bottom.equalTo(sendButton.snp.top).offset(40)
         }
         
         sendButton.snp.makeConstraints { make in
@@ -55,6 +67,57 @@ private extension SupportViewController {
             make.left.right.equalToSuperview().inset(24)
             make.height.equalTo(56)
         }
+    }
+}
+
+//MARK: - Functions
+private extension SupportViewController {
+    
+    @objc func sendToSupportTapped() {
+        let description = supportTextField.text!
         
+        SVProgressHUD.show()
+        
+        let parameters = ["problem_description": description]
+        AF.upload(multipartFormData: { multiPart in
+            for (key, value) in parameters {
+                multiPart.append(value.data(using: .utf8)!, withName: key)
+            }
+        }, to: Urls.SUPPORT_URL).responseDecodable(of: SupportSend.self) { response in
+            
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 || response.response?.statusCode == 201 {
+                let json = JSON(response.data!)
+                print("JSON: \(json)")
+                self.popViewControllerTap()
+            } else {
+                if let statusCode = response.response?.statusCode {
+                    SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
+                } else {
+                    SVProgressHUD.showError(withStatus: "Unknown error")
+                }
+            }
+        }
+    }
+    
+    private func popViewControllerTap() {
+        supportTextField.text = "Расскажите, что не работает?"
+        navigationController?.popViewController(animated: true)
+    }
+    
+    func hideKeyboardWhenTappedAround() {
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
 }

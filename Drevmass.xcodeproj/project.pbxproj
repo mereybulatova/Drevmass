@@ -32,6 +32,8 @@
 		C470F2082B155B660095A0DD /* SignUpInModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C470F2072B155B660095A0DD /* SignUpInModel.swift */; };
 		C470F20C2B1567A60095A0DD /* Reset.swift in Sources */ = {isa = PBXBuildFile; fileRef = C470F20B2B1567A60095A0DD /* Reset.swift */; };
 		C470F20E2B1577840095A0DD /* UserInformation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C470F20D2B1577840095A0DD /* UserInformation.swift */; };
+		C48FA6AF2B168A5D00505519 /* DayInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C48FA6AE2B168A5D00505519 /* DayInfo.swift */; };
+		C48FA6D52B192E3300505519 /* SupportSend.swift in Sources */ = {isa = PBXBuildFile; fileRef = C48FA6D42B192E3300505519 /* SupportSend.swift */; };
 		C4C0C3FF2B125D2E00D97D98 /* UIElementsFunc.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4C0C3FE2B125D2E00D97D98 /* UIElementsFunc.swift */; };
 		C4C0C4092B12A3B200D97D98 /* LessonInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4C0C4082B12A3B200D97D98 /* LessonInfoViewController.swift */; };
 		C4C0C40D2B12A3E500D97D98 /* ProductsInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4C0C40C2B12A3E500D97D98 /* ProductsInfoViewController.swift */; };
@@ -80,6 +82,8 @@
 		C470F2072B155B660095A0DD /* SignUpInModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpInModel.swift; sourceTree = "<group>"; };
 		C470F20B2B1567A60095A0DD /* Reset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reset.swift; sourceTree = "<group>"; };
 		C470F20D2B1577840095A0DD /* UserInformation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserInformation.swift; sourceTree = "<group>"; };
+		C48FA6AE2B168A5D00505519 /* DayInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayInfo.swift; sourceTree = "<group>"; };
+		C48FA6D42B192E3300505519 /* SupportSend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportSend.swift; sourceTree = "<group>"; };
 		C4C0C3FE2B125D2E00D97D98 /* UIElementsFunc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIElementsFunc.swift; sourceTree = "<group>"; };
 		C4C0C4082B12A3B200D97D98 /* LessonInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonInfoViewController.swift; sourceTree = "<group>"; };
 		C4C0C40C2B12A3E500D97D98 /* ProductsInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductsInfoViewController.swift; sourceTree = "<group>"; };
@@ -249,11 +253,13 @@
 		C4C0C4182B13B69400D97D98 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				C48FA6AE2B168A5D00505519 /* DayInfo.swift */,
 				C470F1FD2B14D8B40095A0DD /* Lessons.swift */,
 				C470F2022B14FF700095A0DD /* Products.swift */,
-				C470F2072B155B660095A0DD /* SignUpInModel.swift */,
-				C470F20D2B1577840095A0DD /* UserInformation.swift */,
 				C470F20B2B1567A60095A0DD /* Reset.swift */,
+				C470F2072B155B660095A0DD /* SignUpInModel.swift */,
+				C48FA6D42B192E3300505519 /* SupportSend.swift */,
+				C470F20D2B1577840095A0DD /* UserInformation.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -477,12 +483,14 @@
 				C41F9E572B0EA01D00783142 /* NavigationController.swift in Sources */,
 				C41F9E552B0E7FC600783142 /* TextFieldWithPadding.swift in Sources */,
 				C41F9E6A2B0FFF6B00783142 /* SecondProfileViewController.swift in Sources */,
+				C48FA6AF2B168A5D00505519 /* DayInfo.swift in Sources */,
 				C4C8EFCF2B0AAEA300284A0E /* AppDelegate.swift in Sources */,
 				C41F9E472B0CAF0400783142 /* UIColor + Extensions.swift in Sources */,
 				C41F9E702B0FFF9E00783142 /* SupportViewController.swift in Sources */,
 				C4C8EFF12B0AB57E00284A0E /* LessonsViewController.swift in Sources */,
 				C41F9E4F2B0E4CC900783142 /* Subviews + Extensions.swift in Sources */,
 				C41F9E612B0FB41E00783142 /* NotificationViewController.swift in Sources */,
+				C48FA6D52B192E3300505519 /* SupportSend.swift in Sources */,
 				C4C8EFD12B0AAEA300284A0E /* SceneDelegate.swift in Sources */,
 				C470F2012B14E0940095A0DD /* PlayerViewController.swift in Sources */,
 				C41F9E652B0FE31600783142 /* ProductsCollectionViewCell.swift in Sources */,

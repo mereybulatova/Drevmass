@@ -14,7 +14,8 @@ import SVProgressHUD
 class LessonInfoViewController: UIViewController {
     
     var lesson = Lessons()
-
+    
+    //MARK: - UI Elements
     private lazy var lessonScrollView = {
         let sv = UIScrollView()
         sv.bounces = false
@@ -104,6 +105,7 @@ class LessonInfoViewController: UIViewController {
     private lazy var favoriteButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "favoriteLessons"), for: .normal)
+        button.addTarget(self, action: #selector(addToFavorite), for: .touchUpInside)
         return button
     }()
     
@@ -126,7 +128,8 @@ class LessonInfoViewController: UIViewController {
         label.textAlignment = .left
         return label
     }()
-
+    
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
@@ -145,6 +148,7 @@ class LessonInfoViewController: UIViewController {
     }
 }
 
+//MARK: Views & Constraints
 extension LessonInfoViewController {
     func setupViews() {
         view.addSubviews(lessonScrollView)
@@ -213,7 +217,8 @@ extension LessonInfoViewController {
         }
     }
 }
-    
+
+//MARK: Functions
 extension LessonInfoViewController {
     
     @objc func profileVCTapped() {
@@ -232,19 +237,15 @@ extension LessonInfoViewController {
     
     @objc func addToFavorite() {
         var method = HTTPMethod.post
-        if (lesson.favorite != 0) {
-            method = .delete
-        }
-        
+        let action = "add"
         SVProgressHUD.show()
         
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(Storage.sharedInstance.access_token)"
         ]
         
-        let parameters = ["lesson_id": lesson.id] as [String : Any]
-        
-        AF.request(Urls.FAVORITE_URL, method: method,/* parameters: parameters,*/ encoding: JSONEncoding.default, headers: headers).responseData { response in
+        let parameters: [String : Any] = ["lesson_id": 2, "action": action]
+        AF.request(Urls.FAVORITE_URL, method: method, parameters: parameters, encoding: JSONEncoding.default, headers: headers).responseData { response in
             
             SVProgressHUD.dismiss()
             var resultString = ""

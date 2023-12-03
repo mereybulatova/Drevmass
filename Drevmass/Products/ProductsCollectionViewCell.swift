@@ -47,10 +47,8 @@ class ProductsCollectionViewCell: UICollectionViewCell {
       }()
       
       //MARK: - Init
-      
       override init(frame: CGRect) {
           super.init(frame: frame)
-          commonInit()
           setupViews()
           setupConstraints()
       }
@@ -60,14 +58,8 @@ class ProductsCollectionViewCell: UICollectionViewCell {
       }
   }
 
+//MARK: - Views & Constraints
 extension ProductsCollectionViewCell {
-    
-      func commonInit() {
-          layer.cornerRadius = 15
-          layer.borderWidth = 1
-          layer.borderColor = UIColor(red: 0.88, green: 0.87, blue: 0.87, alpha: 1).cgColor
-      }
-      
       func setData(product: Products) {
           productImageView.sd_setImage(with: URL(string: "http://45.12.74.158/" + product.image_src), placeholderImage: nil)
           titleLabel.text = product.name
@@ -75,6 +67,9 @@ extension ProductsCollectionViewCell {
       }
       
       func setupViews() {
+          layer.cornerRadius = 15
+          layer.borderWidth = 1
+          layer.borderColor = UIColor(red: 0.88, green: 0.87, blue: 0.87, alpha: 1).cgColor
           contentView.backgroundColor = .appWhite
           contentView.addSubviews(titleLabel, productImageView, costLabel)
       }

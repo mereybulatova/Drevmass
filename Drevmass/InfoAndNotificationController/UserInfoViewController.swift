@@ -15,6 +15,8 @@ class UserInfoViewController: UIViewController {
     
     var selectedGender: Int = 0
     var selectedActivity: Int = 0
+    var userID: Int?
+    
     //MARK: - UI Elements
     
     private lazy var logoImage: UIImageView = {
@@ -88,6 +90,7 @@ class UserInfoViewController: UIViewController {
         textField.textColor = .appBrown
         textField.placeholder = "Рост"
         textField.textAlignment = .right
+        textField.keyboardType = .numberPad
         textField.padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 5)
         textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
         return textField
@@ -104,6 +107,7 @@ class UserInfoViewController: UIViewController {
         textField.textColor = .appBrown
         textField.placeholder = "Вес"
         textField.textAlignment = .right
+        textField.keyboardType = .numberPad
         textField.padding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 5)
         textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
         return textField
@@ -122,6 +126,7 @@ class UserInfoViewController: UIViewController {
         textField.borderStyle = .none
         textField.textColor = .appBrown
         textField.inputView = datePicker
+        textField.inputAccessoryView = toolbar
         textField.textAlignment = .right
         textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
         return textField
@@ -130,7 +135,15 @@ class UserInfoViewController: UIViewController {
     private lazy var datePicker: UIDatePicker = {
         let datePick = UIDatePicker()
         datePick.datePickerMode = .date
+        datePick.preferredDatePickerStyle = .wheels
+        datePick.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
         return datePick
+    }()
+    
+    private lazy var toolbar: UIToolbar = {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        return toolbar
     }()
     
     private lazy var activityLabel: UILabel = {
@@ -186,6 +199,7 @@ class UserInfoViewController: UIViewController {
         button.backgroundColor = .appBeige
         button.setTitle("Следующий вопрос", for: .normal)
         button.titleLabel?.font = .appFont(ofSize: 18, weight: .light, font: .Rubik)
+        button.addTarget(self, action: #selector(infoFormPost), for: .touchUpInside)
         button.configuration?.titleAlignment = .center
         button.layer.cornerRadius = 30
         
@@ -235,18 +249,20 @@ class UserInfoViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
-        InfoForm()
     }
 }
 
-//MARK: - Add Views & Constraints
+//MARK: - Views & Constraints
 
 private extension UserInfoViewController {
     
     func setupViews() {
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        toolbar.setItems([doneButton], animated: false)
+        
         view.backgroundColor = .white
         view.addSubviews(
-        logoImage, titleLabel, subtitleLabel, genderLabel, maleButton, femaleButton, heightTextField, heightLabel, smLabel, heightTFView, weightTextField, weightLabel, kgLabel, weightTFView, dateTextField, datePicker, dateLabel, dateTFView, activityLabel, lowButton, middleButton, highButton, nextButton, skipButton, pageControl
+        logoImage, titleLabel, subtitleLabel, genderLabel, maleButton, femaleButton, heightTextField, heightLabel, smLabel, heightTFView, weightTextField, weightLabel, kgLabel, weightTFView, dateTextField, dateLabel, dateTFView, activityLabel, lowButton, middleButton, highButton, nextButton, skipButton, pageControl
         )
     }
     
@@ -340,11 +356,6 @@ private extension UserInfoViewController {
             make.leading.equalTo(dateTextField.snp.leading)
         }
         
-        datePicker.snp.makeConstraints { make in
-            make.centerY.equalTo(dateTextField)
-            make.trailing.equalTo(dateTextField.snp.trailing)
-        }
-        
         dateTFView.snp.makeConstraints { make in
             make.height.equalTo(1)
             make.trailing.leading.equalToSuperview().inset(40)
@@ -393,29 +404,27 @@ private extension UserInfoViewController {
     }
 }
 
-extension UserInfoViewController {
-    
-    @objc private func chooseDate() {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.yyyy"
-        dateTextField.text = dateFormatter.string(from: datePicker.date)
-    }
-}
+//MARK: - Functions
 
 private extension UserInfoViewController {
     
-    func InfoForm() {
-        let gender = selectedGender
-        let activity = selectedActivity
+    @objc func infoFormPost() {
+        let gender = "1"
+        let activity = "3"
         let height = heightTextField.text!
         let weight = weightTextField.text!
         let birth = dateTextField.text!
         
         SVProgressHUD.show()
         
-        let infoUrl = Urls.INFORMATION_POST_URL
-        let headers: HTTPHeaders = ["Authorization": "Bearer 627|z1XeN53Ruf8kPhOHg68aS3zhqwzyQlPpdgtRoXZn"]
-        let parameters: [String: Any] = ["gender": gender, "height": height, "weight": weight, "birth": birth, "activity": activity]
+        let headers: HTTPHeaders = ["Authorization": "Bearer \(Storage.sharedInstance.access_token)"]
+        let parameters: [String: Any] = [
+            "gender": gender,
+            "height": height,
+            "weight": weight,
+            "birth": birth,
+            "activity": activity
+        ]
         
         AF.upload(multipartFormData: { multiPart in
             for (key, value) in parameters {
@@ -423,7 +432,7 @@ private extension UserInfoViewController {
                     multiPart.append(data, withName: key)
                 }
             }
-        }, to: infoUrl, headers: headers).responseDecodable(of: UserInformation.self) { response in
+        }, to: Urls.INFORMATION_POST_URL, method: .post, headers: headers).responseDecodable(of: UserInformation.self) { response in
             
             SVProgressHUD.dismiss()
             var resultString = ""
@@ -436,15 +445,15 @@ private extension UserInfoViewController {
                 let json = JSON(response.data!)
                 print("JSON: \(json)")
                 if let token = json["access_token"].string {
-                   print("hello")
+                    Storage.sharedInstance.access_token = token
+                    UserDefaults.standard.set(token, forKey: "access_token")
+                    print("User information updated successfully")
                 } else {
-                    SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
-                }
-            } else {
-                if let statusCode = response.response?.statusCode {
-                    SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
-                } else {
-                    SVProgressHUD.showError(withStatus: "Unknown error")
+                    if let statusCode = response.response?.statusCode {
+                        SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
+                    } else {
+                        SVProgressHUD.showError(withStatus: "Unknown error")
+                    }
                 }
             }
         }
@@ -501,4 +510,14 @@ private extension UserInfoViewController {
         tabBarController.modalPresentationStyle = .fullScreen
         self.present(tabBarController, animated: true, completion: nil)
     }
+    
+    @objc func datePickerValueChanged() {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateTextField.text = dateFormatter.string(from: datePicker.date)
+    }
+    
+    @objc func doneButtonTapped() {
+           dateTextField.resignFirstResponder()
+       }
 }

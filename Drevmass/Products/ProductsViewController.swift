@@ -34,6 +34,7 @@ class ProductsViewController: UIViewController, ProductsProtocol {
         return collectionView
     }()
     
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
@@ -45,6 +46,7 @@ class ProductsViewController: UIViewController, ProductsProtocol {
     }
 }
 
+//MARK: - Views & Constraints
 private extension ProductsViewController {
     
     func setupViews() {
@@ -63,7 +65,10 @@ private extension ProductsViewController {
             make.right.left.equalToSuperview()
         }
     }
+}
     
+//MARK: - Functions
+private extension ProductsViewController {
     @objc func profileVC() {
         let profileVC = ProfileViewController()
         profileVC.hidesBottomBarWhenPushed = true
@@ -112,8 +117,7 @@ private extension ProductsViewController {
     }
 }
 
-     //MARK: - UICollectionViewDelegate & Data Source
-
+//MARK: - UICollectionViewDelegate & DataSource
 extension ProductsViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

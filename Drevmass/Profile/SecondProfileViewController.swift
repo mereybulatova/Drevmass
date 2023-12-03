@@ -6,10 +6,38 @@
 //
 
 import UIKit
+import SVProgressHUD
+import Alamofire
+import SwiftyJSON
 
 class SecondProfileViewController: UIViewController {
     
+    var selectedGender: Int = 0
+    var selectedActivity: Int = 0
+    var userID: Int?
+    
     //MARK: - UI Elements
+    private lazy var scrollView = {
+        let sv = UIScrollView()
+        sv.bounces = false
+        sv.contentInsetAdjustmentBehavior = .never
+        sv.showsVerticalScrollIndicator = false
+        sv.showsHorizontalScrollIndicator = false
+        sv.frame = view.bounds
+        sv.contentSize = contentSize
+        sv.backgroundColor = .white
+        return sv
+    }()
+    
+    private lazy var contentView: UIView = {
+        let view = UIView()
+        view.frame.size = contentSize
+        return view
+    }()
+    
+    private var contentSize: CGSize {
+        CGSize(width: view.frame.width, height: view.frame.height + 200)
+    }
     
     private lazy var userInfoLabel: UILabel = {
         let label = UILabel()
@@ -130,11 +158,12 @@ class SecondProfileViewController: UIViewController {
     private lazy var dateTFView: UIView = createBeigeView()
     
     private lazy var dateTextField: UITextField = {
-        let textField = TextFieldWithPadding()
+        let textField = UITextField()
         
         textField.borderStyle = .none
         textField.textColor = .appBrown
         textField.inputView = datePicker
+        textField.inputAccessoryView = toolbar
         textField.textAlignment = .right
         textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
         return textField
@@ -143,7 +172,15 @@ class SecondProfileViewController: UIViewController {
     private lazy var datePicker: UIDatePicker = {
         let datePick = UIDatePicker()
         datePick.datePickerMode = .date
+        datePick.preferredDatePickerStyle = .wheels
+        datePick.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
         return datePick
+    }()
+    
+    private lazy var toolbar: UIToolbar = {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        return toolbar
     }()
     
     private lazy var activityLabel: UILabel = {
@@ -202,21 +239,31 @@ class SecondProfileViewController: UIViewController {
         return button
     }()
     
+    //MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        getUserInfo()
+        hideKeyboardWhenTappedAround()
     }
 }
+
+//MARK: - Views & Constraints
 
 private extension SecondProfileViewController {
     
     func setupViews() {
         navigationItem.title = "Профиль"
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Сохранить", style: .plain, target: self, action: #selector(saveTapped))
+        let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(doneButtonTapped))
+        toolbar.setItems([doneButton], animated: false)
         
         view.backgroundColor = .appWhite
-        view.addSubviews(userInfoLabel, nameLabel, nameTextField, nameTFImage, nameTFView, emailLabel, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, repeatPasswordTextField, repeatPasswordTFImage, repeatPasswordTFView, formInfoLabel, genderLabel, maleButton, femaleButton, heightTextField, heightLabel, smLabel, heightTFView, weightTextField, weightLabel, kgLabel, weightTFView, dateLabel, dateTextField, datePicker, dateTFView, activityLabel, highButton, middleButton, lowButton, deleteAccount)
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubviews(userInfoLabel, nameLabel, nameTextField, nameTFImage, nameTFView, emailLabel, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, repeatPasswordTextField, repeatPasswordTFImage, repeatPasswordTFView, formInfoLabel, genderLabel, maleButton, femaleButton, heightTextField, heightLabel, smLabel, heightTFView, weightTextField, weightLabel, kgLabel, weightTFView, dateLabel, dateTextField, dateTFView, activityLabel, highButton, middleButton, lowButton, deleteAccount)
     }
     
     func setupConstraints() {
@@ -382,11 +429,6 @@ private extension SecondProfileViewController {
             make.leading.equalTo(dateTextField.snp.leading)
         }
         
-        datePicker.snp.makeConstraints { make in
-            make.centerY.equalTo(dateTextField)
-            make.trailing.equalTo(dateTextField.snp.trailing)
-        }
-        
         dateTFView.snp.makeConstraints { make in
             make.height.equalTo(1)
             make.trailing.leading.equalToSuperview().inset(40)
@@ -423,7 +465,107 @@ private extension SecondProfileViewController {
     }
 }
     
+//MARK: - Functions
+
 private extension SecondProfileViewController {
+    
+    func getUserInfo() {
+        
+        SVProgressHUD.show()
+        let headers: HTTPHeaders = ["Authorization": "Bearer \(Storage.sharedInstance.access_token)"]
+        AF.request(Urls.USER_INFORMATION_URL, method: .get, headers: headers).responseData { response in
+        
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 {
+                let json = JSON(response.data!)
+                let name = json ["name"]
+                let email = json ["email"]
+                let gender = json ["information"]["gender"]
+                let weight = json ["information"]["weight"]
+                let height = json ["information"]["height"]
+                let birth = json ["information"]["birth"]
+                let activity = json ["information"]["activity"]
+                self.userID = json ["id"].int
+                self.nameTextField.text = name.stringValue
+                self.emailTextField.text = email.stringValue
+                self.selectedGender = gender.intValue
+                self.weightTextField.text = weight.stringValue
+                self.heightTextField.text = height.stringValue
+                self.dateTextField.text = birth.stringValue
+                self.selectedActivity = activity.intValue
+            } else {
+                SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+
+                var ErrorString = "CONNECTION_ERROR"
+                if let sCode = response.response?.statusCode {
+                    ErrorString = ErrorString + " \(sCode)"
+                }
+                ErrorString = ErrorString + " \(resultString)"
+                SVProgressHUD.showError(withStatus: "\(ErrorString)")
+            }
+        }
+    }
+    
+    @objc private func saveTapped() {
+        let name = nameTextField.text ?? ""
+        let email = emailTextField.text ?? ""
+        let password = passwordTextField.text ?? ""
+        let confirmPassword = repeatPasswordTextField.text ?? ""
+        let height = heightTextField.text ?? ""
+        let weight = weightTextField.text ?? ""
+        let birth = dateTextField.text ?? ""
+        let gender = true
+        let activ = 1
+        
+        if password != confirmPassword {
+            SVProgressHUD.showError(withStatus: "Пароли должны совпадать")
+            return
+        }
+        
+        SVProgressHUD.show()
+        
+        let headers: HTTPHeaders = ["Authorization": "Bearer \(Storage.sharedInstance.access_token)"]
+        let parameters: [String: Any] = [
+            "name": name,
+            "email": email,
+            "password": password,
+            "password_confirmation": confirmPassword,
+            "information": [
+                "gender": gender,
+                "height": height,
+                "weight": weight,
+                "birth": birth,
+                "activity": activ
+            ]
+        ]
+        
+        AF.request(Urls.USER_URL, method: .post, parameters: parameters, encoding: JSONEncoding.default, headers: headers).responseData { response in
+            
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 {
+                print("User information updated successfully")
+                
+                self.navigationController?.popViewController(animated: true)
+            } else {
+                SVProgressHUD.showError(withStatus: resultString)
+
+                let errorString = "CONNECTION_ERROR" + " \(response.response?.statusCode ?? -1) \(resultString)"
+                SVProgressHUD.showError(withStatus: errorString)
+            }
+        }
+    }
     
     @objc private func genderButtonTapped(sender: UIButton) {
         let genderButtons = [maleButton, femaleButton]
@@ -436,22 +578,52 @@ private extension SecondProfileViewController {
             sender.isSelected = true
             sender.backgroundColor = .appBeige
             sender.setTitleColor(.appWhite, for: .normal)
+        
+        if sender == maleButton {
+               selectedGender = 0
+           } else if sender == femaleButton {
+               selectedGender = 1
+           }
     }
     
-    @objc private func activityButtonTapped(sender: UIButton) {
-        let activityButton = [lowButton, middleButton, highButton]
+@objc private func activityButtonTapped(sender: UIButton) {
+    let activityButton = [lowButton, middleButton, highButton]
+    
+    for button in activityButton {
+        button.isSelected = false
+        button.backgroundColor = .appLightGray
+        button.setTitleColor(.appBrown, for: .normal)
+    }
+        sender.isSelected = true
+        sender.backgroundColor = .appBeige
+        sender.setTitleColor(.appWhite, for: .normal)
         
-        for button in activityButton {
-            button.isSelected = false
-            button.backgroundColor = .appLightGray
-            button.setTitleColor(.appBrown, for: .normal)
+        if sender == lowButton {
+            selectedActivity = 1
+        } else if sender == middleButton {
+            selectedActivity = 2
+        } else if sender == highButton {
+            selectedActivity = 3
         }
-            sender.isSelected = true
-            sender.backgroundColor = .appBeige
-            sender.setTitleColor(.appWhite, for: .normal)
     }
     
-    @objc private func saveTapped() {
-        
+    @objc func datePickerValueChanged() {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateTextField.text = dateFormatter.string(from: datePicker.date)
+    }
+    
+    @objc func doneButtonTapped() {
+           dateTextField.resignFirstResponder()
+       }
+    
+    func hideKeyboardWhenTappedAround() {
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
 }

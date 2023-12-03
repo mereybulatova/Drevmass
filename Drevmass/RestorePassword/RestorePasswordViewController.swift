@@ -82,9 +82,12 @@ class RestorePasswordViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
+        hideKeyboardWhenTappedAround()
         emailTextField.delegate = self
     }
 }
+
+//MARK: - Views & constraints
 
 private extension RestorePasswordViewController {
     
@@ -147,6 +150,8 @@ private extension RestorePasswordViewController {
     }
 }
 
+//MARK: Functions
+
 extension RestorePasswordViewController {
     
     @objc func resetPasswordTapped() {
@@ -191,7 +196,19 @@ extension RestorePasswordViewController {
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         present(alert, animated: true, completion: nil)
     }
+    
+    func hideKeyboardWhenTappedAround() {
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+    }
 }
+
+//MARK: - TextField extensions
 
 extension RestorePasswordViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {

@@ -14,7 +14,7 @@ extension UIViewController {
         let textField = TextFieldWithPadding()
         textField.placeholder = placeholder
         textField.font = .appFont(ofSize: 16, weight: .light, font: .Rubik)
-        textField.textColor = .appMediumGray
+        textField.textColor = .appMainBrown
         textField.isSecureTextEntry = secureText
         textField.borderStyle = .none
         return textField
