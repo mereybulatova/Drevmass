@@ -16,7 +16,6 @@ class Urls {
     static let UPDATE_URL = BASE_URL + "user"
     static let LOGOUT_URL = BASE_URL + "logout"
     static let GET_UPDATE_URL = BASE_URL + "user"
-    static let DELETE_URL = BASE_URL + "delete"
     static let LESSONS_URL = BASE_URL + "lessons"
     static let PRODUCTS_URL = BASE_URL + "products"
     static let FAVORITE_URL = BASE_URL + "favorites"
@@ -24,4 +23,5 @@ class Urls {
     static let USER_INFORMATION_URL = BASE_URL + "user/information"
     static let INFORMATION_POST_URL = BASE_URL + "information"
     static let SUPPORT_URL = BASE_URL + "supports"
+    static let DELETE_USER_URL = BASE_URL + "user/delete"
 }

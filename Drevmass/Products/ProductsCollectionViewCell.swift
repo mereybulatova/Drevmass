@@ -27,7 +27,7 @@ class ProductsCollectionViewCell: UICollectionViewCell {
       private lazy var productImageView: UIImageView = {
           let iv = UIImageView()
           iv.image = UIImage(named: "product")
-          iv.layer.cornerRadius = 10
+          iv.layer.cornerRadius = 40
           iv.clipsToBounds = true
           
           return iv
@@ -67,7 +67,7 @@ extension ProductsCollectionViewCell {
       }
       
       func setupViews() {
-          layer.cornerRadius = 15
+          layer.cornerRadius = 40
           layer.borderWidth = 1
           layer.borderColor = UIColor(red: 0.88, green: 0.87, blue: 0.87, alpha: 1).cgColor
           contentView.backgroundColor = .appWhite

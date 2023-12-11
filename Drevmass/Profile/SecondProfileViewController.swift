@@ -20,24 +20,25 @@ class SecondProfileViewController: UIViewController {
     private lazy var scrollView = {
         let sv = UIScrollView()
         sv.bounces = false
+        sv.contentMode = .scaleToFill
         sv.contentInsetAdjustmentBehavior = .never
         sv.showsVerticalScrollIndicator = false
         sv.showsHorizontalScrollIndicator = false
-        sv.frame = view.bounds
-        sv.contentSize = contentSize
+//        sv.frame = view.bounds
+//        sv.contentSize = CGSize(width: view.frame.width, height: 950)
         sv.backgroundColor = .white
         return sv
     }()
     
-    private lazy var contentView: UIView = {
+    private lazy var contentScrollView: UIView = {
         let view = UIView()
-        view.frame.size = contentSize
+        view.backgroundColor = .white
         return view
     }()
     
-    private var contentSize: CGSize {
-        CGSize(width: view.frame.width, height: view.frame.height + 200)
-    }
+//    private var contentSize: CGSize {
+//        CGSize(width: view.frame.width, height: view.frame.height + 200)
+//    }
     
     private lazy var userInfoLabel: UILabel = {
         let label = UILabel()
@@ -236,6 +237,7 @@ class SecondProfileViewController: UIViewController {
         button.setTitle("Удалить аккаунт", for: .normal)
         button.setTitleColor(.red, for: .normal)
         button.titleLabel?.font = .appFont(ofSize: 18, weight: .regular, font: .Rubik)
+        button.addTarget(self, action: #selector(deleteAlertShow), for: .touchUpInside)
         return button
     }()
     
@@ -262,13 +264,23 @@ private extension SecondProfileViewController {
         
         view.backgroundColor = .appWhite
         view.addSubview(scrollView)
-        scrollView.addSubview(contentView)
-        contentView.addSubviews(userInfoLabel, nameLabel, nameTextField, nameTFImage, nameTFView, emailLabel, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, repeatPasswordTextField, repeatPasswordTFImage, repeatPasswordTFView, formInfoLabel, genderLabel, maleButton, femaleButton, heightTextField, heightLabel, smLabel, heightTFView, weightTextField, weightLabel, kgLabel, weightTFView, dateLabel, dateTextField, dateTFView, activityLabel, highButton, middleButton, lowButton, deleteAccount)
+        scrollView.addSubview(contentScrollView)
+        contentScrollView.addSubviews(userInfoLabel, nameLabel, nameTextField, nameTFImage, nameTFView, emailLabel, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, repeatPasswordTextField, repeatPasswordTFImage, repeatPasswordTFView, formInfoLabel, genderLabel, maleButton, femaleButton, heightTextField, heightLabel, smLabel, heightTFView, weightTextField, weightLabel, kgLabel, weightTFView, dateLabel, dateTextField, dateTFView, activityLabel, highButton, middleButton, lowButton, deleteAccount)
     }
     
     func setupConstraints() {
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        contentScrollView.snp.makeConstraints { make in
+            make.bottom.right.left.equalToSuperview()
+            make.top.equalTo(scrollView.contentLayoutGuide.snp.top)
+            make.width.equalTo(scrollView.snp.width)
+        }
+        
         userInfoLabel.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(18)
+            make.top.equalToSuperview().offset(102)
             make.left.equalToSuperview().inset(24)
         }
         
@@ -461,6 +473,7 @@ private extension SecondProfileViewController {
         deleteAccount.snp.makeConstraints { make in
             make.top.equalTo(highButton.snp.bottom).offset(24)
             make.left.equalToSuperview().inset(24)
+            make.bottom.equalToSuperview().inset(45)
         }
     }
 }
@@ -474,7 +487,7 @@ private extension SecondProfileViewController {
         SVProgressHUD.show()
         let headers: HTTPHeaders = ["Authorization": "Bearer \(Storage.sharedInstance.access_token)"]
         AF.request(Urls.USER_INFORMATION_URL, method: .get, headers: headers).responseData { response in
-        
+            
             SVProgressHUD.dismiss()
             var resultString = ""
             if let data = response.data {
@@ -501,7 +514,7 @@ private extension SecondProfileViewController {
                 self.selectedActivity = activity.intValue
             } else {
                 SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
-
+                
                 var ErrorString = "CONNECTION_ERROR"
                 if let sCode = response.response?.statusCode {
                     ErrorString = ErrorString + " \(sCode)"
@@ -560,7 +573,7 @@ private extension SecondProfileViewController {
                 self.navigationController?.popViewController(animated: true)
             } else {
                 SVProgressHUD.showError(withStatus: resultString)
-
+                
                 let errorString = "CONNECTION_ERROR" + " \(response.response?.statusCode ?? -1) \(resultString)"
                 SVProgressHUD.showError(withStatus: errorString)
             }
@@ -575,25 +588,25 @@ private extension SecondProfileViewController {
             button.backgroundColor = .appLightGray
             button.setTitleColor(.appBrown, for: .normal)
         }
-            sender.isSelected = true
-            sender.backgroundColor = .appBeige
-            sender.setTitleColor(.appWhite, for: .normal)
+        sender.isSelected = true
+        sender.backgroundColor = .appBeige
+        sender.setTitleColor(.appWhite, for: .normal)
         
         if sender == maleButton {
-               selectedGender = 0
-           } else if sender == femaleButton {
-               selectedGender = 1
-           }
+            selectedGender = 0
+        } else if sender == femaleButton {
+            selectedGender = 1
+        }
     }
     
-@objc private func activityButtonTapped(sender: UIButton) {
-    let activityButton = [lowButton, middleButton, highButton]
-    
-    for button in activityButton {
-        button.isSelected = false
-        button.backgroundColor = .appLightGray
-        button.setTitleColor(.appBrown, for: .normal)
-    }
+    @objc private func activityButtonTapped(sender: UIButton) {
+        let activityButton = [lowButton, middleButton, highButton]
+        
+        for button in activityButton {
+            button.isSelected = false
+            button.backgroundColor = .appLightGray
+            button.setTitleColor(.appBrown, for: .normal)
+        }
         sender.isSelected = true
         sender.backgroundColor = .appBeige
         sender.setTitleColor(.appWhite, for: .normal)
@@ -614,8 +627,8 @@ private extension SecondProfileViewController {
     }
     
     @objc func doneButtonTapped() {
-           dateTextField.resignFirstResponder()
-       }
+        dateTextField.resignFirstResponder()
+    }
     
     func hideKeyboardWhenTappedAround() {
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
@@ -625,5 +638,83 @@ private extension SecondProfileViewController {
     
     @objc func dismissKeyboard() {
         view.endEditing(true)
+    }
+    
+    @objc func deleteAlertShow() {
+        showAlert()
+    }
+    
+    func showAlert() {
+        let alert = UIAlertController(title: "Подтверждение", message: "Вы уверены, что хотите удалить аккаунт?", preferredStyle: .alert)
+        
+        let cancelAction = UIAlertAction(title: "Закрыть", style: .cancel, handler: nil)
+        alert.addAction(cancelAction)
+        
+        let deleteAction = UIAlertAction(title: "Удалить", style: .destructive) { [weak self] _ in
+            self?.confirmDelete()
+        }
+        alert.addAction(deleteAction)
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func confirmDelete() {
+        let alert = UIAlertController(title: "Вы точно хотите удалить аккаунт?", message: "Это действие необратимо!", preferredStyle: .actionSheet)
+        
+        let cancelAction = UIAlertAction(title: "Отмена", style: .cancel, handler: nil)
+        alert.addAction(cancelAction)
+        
+        let deleteAction = UIAlertAction(title: "Да, удалить", style: .destructive) { [weak self] _ in
+            UserDefaults.standard.removeObject(forKey: "access_token")
+            self?.deleteAccountTapped()
+        }
+        alert.addAction(deleteAction)
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func deleteAccountTapped() {
+        let email = emailTextField.text!
+        let password = passwordTextField.text!
+        
+        SVProgressHUD.show()
+        
+        let parameters = ["email": email, "password": password]
+        AF.upload(multipartFormData: { multiPart in
+            for (key, value) in parameters {
+                multiPart.append(value.data(using: .utf8)!, withName: key)
+            }
+        }, to: Urls.DELETE_USER_URL).responseDecodable(of: DeleteUser.self) { response in
+            
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            if response.response?.statusCode == 200 {
+                let json = JSON(response.data!)
+                print("JSON: \(json)")
+                if let message = json["message"].string {
+                    self.logoutDelete()
+                } else {
+                    SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+                }
+            } else {
+                // Обработка ошибок сервера
+                if let statusCode = response.response?.statusCode {
+                    SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
+                } else {
+                    SVProgressHUD.showError(withStatus: "Unknown error")
+                }
+            }
+        }
+    }
+    
+    func logoutDelete() {
+        let rootVC = UINavigationController(rootViewController: OnboardingVC())
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.window?.rootViewController = rootVC
+        appDelegate.window?.makeKeyAndVisible()
+        
     }
 }

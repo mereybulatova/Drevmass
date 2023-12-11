@@ -40,12 +40,22 @@ class SupportViewController: UIViewController {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
-        hideKeyboardWhenTappedAround()
+        keyboardButton()
     }
 }
 
 //MARK: - Views & Constraints
 private extension SupportViewController {
+    
+    func keyboardButton() {
+    NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name:
+                                            UIResponder.keyboardWillShowNotification, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name:
+                                            UIResponder.keyboardWillHideNotification, object: nil)
+
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
+        view.addGestureRecognizer(tapGesture)
+    }
     
     func setupViews() {
         navigationItem.title = "Служба поддержки"
@@ -118,6 +128,31 @@ private extension SupportViewController {
     }
     
     @objc func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    @objc func keyboardWillShow(_ notification: Notification) {
+        if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+            // Поднимаем кнопку выше клавиатуры
+            let buttonBottomY = sendButton.frame.origin.y + sendButton.frame.size.height
+            let spaceAboveKeyboard = view.frame.height - keyboardSize.height - buttonBottomY
+            if spaceAboveKeyboard < 0 {
+                animateButtonMoveY(y: spaceAboveKeyboard)
+            }
+        }
+    }
+    
+    @objc func keyboardWillHide(_ notification: Notification) {
+        animateButtonMoveY(y: 0)
+    }
+    
+    private func animateButtonMoveY(y: CGFloat) {
+        UIView.animate(withDuration: 0.3) {
+            self.sendButton.transform = CGAffineTransform(translationX: 0, y: y)
+        }
+    }
+    
+    @objc func hideKeyboard() {
         view.endEditing(true)
     }
 }

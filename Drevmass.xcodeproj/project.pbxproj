@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C41CCEF42B279C6A009FCD4F /* DeleteUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41CCEF32B279C6A009FCD4F /* DeleteUser.swift */; };
 		C41F9E472B0CAF0400783142 /* UIColor + Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41F9E462B0CAF0400783142 /* UIColor + Extensions.swift */; };
 		C41F9E492B0CBD8D00783142 /* OnboardingVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41F9E482B0CBD8D00783142 /* OnboardingVC.swift */; };
 		C41F9E4B2B0CC6D300783142 /* UIFont + Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C41F9E4A2B0CC6D300783142 /* UIFont + Extensions.swift */; };
@@ -57,6 +58,7 @@
 		154D37BD370F37A740FECC64 /* Pods_Drevmass.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Drevmass.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		32A1AD58156410BDD3C15CF5 /* Pods-Drevmass.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Drevmass.debug.xcconfig"; path = "Target Support Files/Pods-Drevmass/Pods-Drevmass.debug.xcconfig"; sourceTree = "<group>"; };
 		B76A09FE7AD8B6D08D535CB7 /* Pods-Drevmass.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Drevmass.release.xcconfig"; path = "Target Support Files/Pods-Drevmass/Pods-Drevmass.release.xcconfig"; sourceTree = "<group>"; };
+		C41CCEF32B279C6A009FCD4F /* DeleteUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteUser.swift; sourceTree = "<group>"; };
 		C41F9E462B0CAF0400783142 /* UIColor + Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor + Extensions.swift"; sourceTree = "<group>"; };
 		C41F9E482B0CBD8D00783142 /* OnboardingVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingVC.swift; sourceTree = "<group>"; };
 		C41F9E4A2B0CC6D300783142 /* UIFont + Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIFont + Extensions.swift"; sourceTree = "<group>"; };
@@ -260,6 +262,7 @@
 				C470F2072B155B660095A0DD /* SignUpInModel.swift */,
 				C48FA6D42B192E3300505519 /* SupportSend.swift */,
 				C470F20D2B1577840095A0DD /* UserInformation.swift */,
+				C41CCEF32B279C6A009FCD4F /* DeleteUser.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -491,6 +494,7 @@
 				C41F9E4F2B0E4CC900783142 /* Subviews + Extensions.swift in Sources */,
 				C41F9E612B0FB41E00783142 /* NotificationViewController.swift in Sources */,
 				C48FA6D52B192E3300505519 /* SupportSend.swift in Sources */,
+				C41CCEF42B279C6A009FCD4F /* DeleteUser.swift in Sources */,
 				C4C8EFD12B0AAEA300284A0E /* SceneDelegate.swift in Sources */,
 				C470F2012B14E0940095A0DD /* PlayerViewController.swift in Sources */,
 				C41F9E652B0FE31600783142 /* ProductsCollectionViewCell.swift in Sources */,
