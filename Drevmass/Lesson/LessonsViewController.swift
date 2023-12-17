@@ -39,10 +39,14 @@ class LessonsViewController: UIViewController, LessonProtocol {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
-        downloadLessons()
         
         lessonsCollectionView.dataSource = self
         lessonsCollectionView.delegate = self
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        downloadLessons()
     }
 }
 
@@ -96,6 +100,8 @@ private extension LessonsViewController {
                 print("JSON: \(json)")
                 
                 if let array = json.array {
+                    self.lessons = []
+                    
                     for item in array {
                         let lesson = Lessons(json: item)
                         self.lessons.append(lesson)

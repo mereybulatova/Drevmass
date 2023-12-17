@@ -92,6 +92,22 @@ class SignInViewController: UIViewController {
     private lazy var passwordTFImage: UIImageView = createImageView(image: UIImage(named: "password"))
     private lazy var passwordTFView: UIView = createBeigeView()
     
+    private lazy var emailLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Введите e-mail"
+        label.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
+        label.textColor = .appMainMediumGray
+        return label
+    }()
+    
+    private lazy var passwordLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Введите пароль"
+        label.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
+        label.textColor = .appMainMediumGray
+        return label
+    }()
+    
     private lazy var signInButton: UIButton = {
         let button = UIButton()
         button.backgroundColor = .appBeige
@@ -155,13 +171,15 @@ class SignInViewController: UIViewController {
  extension SignInViewController {
     
     func setupViews() {
+        emailLabel.isHidden = true
+        passwordLabel.isHidden = true
         navigationItem.title = "Вход"
         
         view.addSubviews(scrollView)
         scrollView.addSubview(contentView)
         contentView.addSubviews(posterImage, backView)
         backView.addSubviews(
-            logoImage, titleLabel, subtitleLabel, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, signInButton, signUpButton, forgetPasswordLabel, forgetPasswordButton
+            logoImage, titleLabel, subtitleLabel, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, signInButton, signUpButton, forgetPasswordLabel, forgetPasswordButton, emailLabel, passwordLabel
         )
     }
     
@@ -248,6 +266,16 @@ class SignInViewController: UIViewController {
             make.centerY.equalTo(forgetPasswordLabel)
             make.leading.equalTo(forgetPasswordLabel.snp.trailing).offset(5)
         }
+        
+        emailLabel.snp.makeConstraints { make in
+            make.bottom.equalTo(emailTFImage.snp.top).offset(-11)
+            make.left.equalToSuperview().inset(40)
+        }
+        
+        passwordLabel.snp.makeConstraints { make in
+            make.bottom.equalTo(passwordTFImage.snp.top).offset(-11)
+            make.left.equalToSuperview().inset(40)
+        }
     }
 }
 
@@ -278,6 +306,27 @@ private extension SignInViewController {
     }
     
     @objc func signInButtonTapped() {
+        if emailTextField.text!.isEmpty == true || passwordTextField.text!.isEmpty == true {
+            if emailTextField.text!.isEmpty == true {
+                emailLabel.isHidden = false
+                emailLabel.textColor = .red
+                emailTFView.backgroundColor = .red
+                emailTFImage.image = .redEmail
+                emailTextField.placeholder = ""
+            }
+            if passwordTextField.text!.isEmpty == true {
+                passwordLabel.isHidden = false
+                passwordLabel.textColor = .red
+                passwordTFView.backgroundColor = .red
+                passwordTFImage.image = .redPassword
+                passwordTextField.placeholder = ""
+            }
+            return
+        }
+        signIn()
+    }
+    
+    private func signIn() {
         let email = emailTextField.text!
         let password = passwordTextField.text!
         
@@ -306,16 +355,34 @@ private extension SignInViewController {
                     UserDefaults.standard.set(token, forKey: "access_token")
                     self.startApp()
                 } else {
-                    SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+                    self.showConnectionErrorAlert()
                 }
             } else {
                 if let statusCode = response.response?.statusCode {
-                    SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
+                    self.showErrorAlert()
                 } else {
                     SVProgressHUD.showError(withStatus: "Unknown error")
                 }
             }
         }
+    }
+    
+    func showErrorAlert() {
+        let alert = UIAlertController(title: "Неверный логин или пароль", message: "Вы ввели неверные данные, попробуйте еще раз.", preferredStyle: .alert)
+        
+        let cancelAction = UIAlertAction(title: "Ок", style: .cancel, handler: nil)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func showConnectionErrorAlert() {
+        let alert = UIAlertController(title: "Плохое соединение с сервером", message: "Попробуйте войти позже", preferredStyle: .alert)
+        
+        let cancelAction = UIAlertAction(title: "Ок", style: .cancel, handler: nil)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
     }
     
     func startApp() {
@@ -340,5 +407,29 @@ extension SignInViewController: UITextFieldDelegate {
             signInButton.alpha = 1
         }
         return true
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        if textField == emailTextField {
+            emailLabel.isHidden = false
+            emailTextField.placeholder = ""
+        }
+        
+        if textField == passwordTextField {
+            passwordLabel.isHidden = false
+            passwordTextField.placeholder = ""
+        }
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if textField == emailTextField {
+            emailLabel.isHidden = emailTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true
+            emailTextField.placeholder = "Введите e-mail"
+        }
+        
+        if textField == passwordTextField {
+            passwordLabel.isHidden = passwordTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true
+            passwordTextField.placeholder = "Введите пароль"
+        }
     }
 }

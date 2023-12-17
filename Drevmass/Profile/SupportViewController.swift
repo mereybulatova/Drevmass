@@ -133,7 +133,6 @@ private extension SupportViewController {
     
     @objc func keyboardWillShow(_ notification: Notification) {
         if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
-            // Поднимаем кнопку выше клавиатуры
             let buttonBottomY = sendButton.frame.origin.y + sendButton.frame.size.height
             let spaceAboveKeyboard = view.frame.height - keyboardSize.height - buttonBottomY
             if spaceAboveKeyboard < 0 {

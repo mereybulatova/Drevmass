@@ -73,13 +73,45 @@ class SignUpViewController: UIViewController {
     private lazy var emailTFImage: UIImageView = createImageView(image: UIImage(named: "email"))
     private lazy var emailTFView: UIView = createBeigeView()
     
-    private lazy var passwordTextField: UITextField = createTextField(placeholder: "Введите пароль", secureText: false)
+    private lazy var passwordTextField: UITextField = createTextField(placeholder: "Введите пароль", secureText: true)
     private lazy var passwordTFImage: UIImageView = createImageView(image: UIImage(named: "password"))
     private lazy var passwordTFView: UIView = createBeigeView()
     
-    private lazy var repeatPasswordTextField: UITextField = createTextField(placeholder: "Повторите пароль", secureText: false)
+    private lazy var repeatPasswordTextField: UITextField = createTextField(placeholder: "Повторите пароль", secureText: true)
     private lazy var repeatPasswordTFImage: UIImageView = createImageView(image: UIImage(named:"password"))
     private lazy var repeatPasswordTFView: UIView = createBeigeView()
+    
+    private lazy var nameLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Введите имя"
+        label.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
+        label.textColor = .appMainMediumGray
+        return label
+    }()
+    
+    private lazy var emailLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Введите e-mail"
+        label.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
+        label.textColor = .appMainMediumGray
+        return label
+    }()
+    
+    private lazy var passwordLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Введите пароль"
+        label.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
+        label.textColor = .appMainMediumGray
+        return label
+    }()
+    
+    private lazy var confirmPasswordLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Повторите пароль"
+        label.font = .appFont(ofSize: 14, weight: .light, font: .Rubik)
+        label.textColor = .appMainMediumGray
+        return label
+    }()
     
     private lazy var signUpButton: UIButton = {
         let button = UIButton()
@@ -130,13 +162,17 @@ class SignUpViewController: UIViewController {
 private extension SignUpViewController {
     
     func setupViews() {
+        nameLabel.isHidden = true
+        emailLabel.isHidden = true
+        passwordLabel.isHidden = true
+        confirmPasswordLabel.isHidden = true
         navigationItem.title = "Регистрация"
         
         view.backgroundColor = .appWhite
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         contentView.addSubviews(
-            logoImage, titleLabel, subtitleLabel, nameTextField, nameTFImage, nameTFView, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, repeatPasswordTextField, repeatPasswordTFImage, repeatPasswordTFView, signUpButton, signInLabel, signInButton
+            logoImage, titleLabel, subtitleLabel, nameTextField, nameTFImage, nameTFView, emailTextField, emailTFImage, emailTFView, passwordTextField, passwordTFImage, passwordTFView, repeatPasswordTextField, repeatPasswordTFImage, repeatPasswordTFView, signUpButton, signInLabel, signInButton, nameLabel, emailLabel, passwordLabel, confirmPasswordLabel
         )
     }
     
@@ -239,6 +275,26 @@ private extension SignUpViewController {
             make.centerY.equalTo(signInLabel)
             make.leading.equalTo(signInLabel.snp.trailing).offset(5)
         }
+        
+        nameLabel.snp.makeConstraints { make in
+            make.bottom.equalTo(nameTFImage.snp.top).offset(-11)
+            make.left.equalToSuperview().inset(40)
+        }
+        
+        emailLabel.snp.makeConstraints { make in
+            make.bottom.equalTo(emailTFImage.snp.top).offset(-11)
+            make.left.equalToSuperview().inset(40)
+        }
+        
+        passwordLabel.snp.makeConstraints { make in
+            make.bottom.equalTo(passwordTFImage.snp.top).offset(-11)
+            make.left.equalToSuperview().inset(40)
+        }
+        
+        confirmPasswordLabel.snp.makeConstraints { make in
+            make.bottom.equalTo(repeatPasswordTFImage.snp.top).offset(-11)
+            make.left.equalToSuperview().inset(40)
+        }
     }
 }
 
@@ -256,13 +312,12 @@ private extension SignUpViewController {
             
             SVProgressHUD.show()
             
-            let registrationUrl = Urls.REGISTER_URL
             let parameters = ["name": signUpName, "email": signUpEmail, "password": signUpPassword, "password_confirmation": confirmPassword]
             AF.upload(multipartFormData: { multiPart in
                 for (key, value) in parameters {
                     multiPart.append(value.data(using: .utf8)!, withName: key)
                 }
-            }, to: registrationUrl).responseDecodable(of: SignUpInModel.self) { response in
+            }, to: Urls.REGISTER_URL).responseDecodable(of: SignUpInModel.self) { response in
                 
                 SVProgressHUD.dismiss()
                 var resultString = ""
@@ -280,12 +335,12 @@ private extension SignUpViewController {
                         UserDefaults.standard.set(token, forKey: "access_token")
                         self.startUserForm()
                     } else {
-                        SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+                        self.showConnectionErrorAlert()
                     }
                 } else {
                     // Обработка ошибок сервера
                     if let statusCode = response.response?.statusCode {
-                        SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
+                        self.showErrorAlert()
                     } else {
                         SVProgressHUD.showError(withStatus: "Unknown error")
                     }
@@ -315,6 +370,24 @@ private extension SignUpViewController {
         navigationController?.show(formVC, sender: self)
         navigationItem.title = ""
     }
+    
+    func showErrorAlert() {
+        let alert = UIAlertController(title: "Данные введены некорректно", message: "Вы ввели неверные данные, попробуйте еще раз.", preferredStyle: .alert)
+        
+        let cancelAction = UIAlertAction(title: "Ок", style: .cancel, handler: nil)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func showConnectionErrorAlert() {
+        let alert = UIAlertController(title: "Плохое соединение с сервером", message: "Попробуйте войти позже", preferredStyle: .alert)
+        
+        let cancelAction = UIAlertAction(title: "Ок", style: .cancel, handler: nil)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true, completion: nil)
+    }
 }
 
 //MARK: - TextField extensions
@@ -333,7 +406,50 @@ extension SignUpViewController: UITextFieldDelegate {
             signUpButton.isEnabled = true
             signUpButton.alpha = 1
         }
-        
         return true
+    }
+    
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        if textField == nameTextField {
+            nameLabel.isHidden = false
+            nameTextField.placeholder = ""
+        }
+        
+        if textField == repeatPasswordTextField {
+            confirmPasswordLabel.isHidden = false
+            repeatPasswordTextField.placeholder = ""
+        }
+        
+        if textField == emailTextField {
+            emailLabel.isHidden = false
+            emailTextField.placeholder = ""
+        }
+        
+        if textField == passwordTextField {
+            passwordLabel.isHidden = false
+            passwordTextField.placeholder = ""
+        }
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if textField == nameTextField {
+             nameLabel.isHidden = nameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true
+             nameTextField.placeholder = "Введите имя"
+         }
+         
+         if textField == repeatPasswordTextField {
+             confirmPasswordLabel.isHidden = repeatPasswordTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true
+             repeatPasswordTextField.placeholder = "Повторите пароль"
+         }
+         
+         if textField == emailTextField {
+             emailLabel.isHidden = emailTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true
+             emailTextField.placeholder = "Введите e-mail"
+         }
+         
+         if textField == passwordTextField {
+             passwordLabel.isHidden = passwordTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true
+             passwordTextField.placeholder = "Введите пароль"
+         }
     }
 }

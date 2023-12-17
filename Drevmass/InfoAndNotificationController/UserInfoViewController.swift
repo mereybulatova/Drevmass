@@ -17,6 +17,7 @@ class UserInfoViewController: UIViewController {
     var selectedActivity: Int = 0
     var userID: Int?
     
+    
     //MARK: - UI Elements
     
     private lazy var logoImage: UIImageView = {
@@ -408,31 +409,27 @@ private extension UserInfoViewController {
 
 private extension UserInfoViewController {
     
+   
+    
     @objc func infoFormPost() {
-        let gender = "1"
-        let activity = "3"
-        let height = heightTextField.text!
-        let weight = weightTextField.text!
-        let birth = dateTextField.text!
+        let gender = maleButton.backgroundColor == .appBeige ? "0" : "1"
+        let activity =  lowButton.backgroundColor == .appBeige ? "1" :
+        (middleButton.backgroundColor == .appBeige ? "2" : "3")
+        let height = heightTextField.text ?? ""
+        let weight = weightTextField.text ?? ""
+        let birth = dateTextField.text ?? ""
         
         SVProgressHUD.show()
         
         let headers: HTTPHeaders = ["Authorization": "Bearer \(Storage.sharedInstance.access_token)"]
-        let parameters: [String: Any] = [
-            "gender": gender,
-            "height": height,
-            "weight": weight,
-            "birth": birth,
-            "activity": activity
-        ]
+        
+        let parameters = ["gender": gender, "activity": activity, "height": height, "weight": weight, "birth": birth]
         
         AF.upload(multipartFormData: { multiPart in
             for (key, value) in parameters {
-                if let data = "\(value)".data(using: .utf8) {
-                    multiPart.append(data, withName: key)
-                }
+                multiPart.append(value.data(using: .utf8)!, withName: key)
             }
-        }, to: Urls.INFORMATION_POST_URL, method: .post, headers: headers).responseDecodable(of: UserInformation.self) { response in
+        }, to: Urls.INFORMATION_POST_URL, headers: headers).responseDecodable(of: UserInformation.self) { response in
             
             SVProgressHUD.dismiss()
             var resultString = ""
@@ -441,14 +438,10 @@ private extension UserInfoViewController {
                 print(resultString)
             }
             
-            if response.response?.statusCode == 200 {
+            if response.response?.statusCode == 200 || response.response?.statusCode == 201 {
                 let json = JSON(response.data!)
                 print("JSON: \(json)")
-                if let token = json["access_token"].string {
-                    Storage.sharedInstance.access_token = token
-                    UserDefaults.standard.set(token, forKey: "access_token")
-                    print("User information updated successfully")
-                } else {
+            } else {
                     if let statusCode = response.response?.statusCode {
                         SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
                     } else {
@@ -457,7 +450,6 @@ private extension UserInfoViewController {
                 }
             }
         }
-    }
     
     @objc private func genderButtonTapped(sender: UIButton) {
         let genderButtons = [maleButton, femaleButton]

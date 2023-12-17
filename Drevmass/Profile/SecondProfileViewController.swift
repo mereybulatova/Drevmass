@@ -15,6 +15,7 @@ class SecondProfileViewController: UIViewController {
     var selectedGender: Int = 0
     var selectedActivity: Int = 0
     var userID: Int?
+    var info = Information()
     
     //MARK: - UI Elements
     private lazy var scrollView = {
@@ -499,19 +500,10 @@ private extension SecondProfileViewController {
                 let json = JSON(response.data!)
                 let name = json ["name"]
                 let email = json ["email"]
-                let gender = json ["information"]["gender"]
-                let weight = json ["information"]["weight"]
-                let height = json ["information"]["height"]
-                let birth = json ["information"]["birth"]
-                let activity = json ["information"]["activity"]
-                self.userID = json ["id"].int
                 self.nameTextField.text = name.stringValue
                 self.emailTextField.text = email.stringValue
-                self.selectedGender = gender.intValue
-                self.weightTextField.text = weight.stringValue
-                self.heightTextField.text = height.stringValue
-                self.dateTextField.text = birth.stringValue
-                self.selectedActivity = activity.intValue
+                self.info = Information(json: json)
+                self.configureButtons()
             } else {
                 SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
                 
@@ -525,6 +517,22 @@ private extension SecondProfileViewController {
         }
     }
     
+    private func configureButtons() {
+        maleButton.backgroundColor = info.gender == 0 ? .appBeige : .appLightGray
+        maleButton.titleLabel?.textColor = info.gender == 0 ? .appWhite : .appBrown
+        femaleButton.backgroundColor = info.gender == 1 ? .appBeige : .appLightGray
+        femaleButton.titleLabel?.textColor = info.gender == 1 ? .appWhite : .appBrown
+        lowButton.backgroundColor = info.activity == 1 ? .appBeige : .appLightGray
+        lowButton.titleLabel?.textColor = info.activity == 1 ? .appWhite : .appBrown
+        middleButton.backgroundColor = info.activity == 2 ? .appBeige : .appLightGray
+        middleButton.titleLabel?.textColor = info.activity == 2 ? .appWhite : .appBrown
+        highButton.backgroundColor = info.activity == 3 ? .appBeige : .appLightGray
+        highButton.titleLabel?.textColor = info.activity == 3 ? .appWhite : .appBrown
+        weightTextField.text = info.weight
+        heightTextField.text = info.height
+        dateTextField.text = info.birth
+    }
+    
     @objc private func saveTapped() {
         let name = nameTextField.text ?? ""
         let email = emailTextField.text ?? ""
@@ -533,8 +541,9 @@ private extension SecondProfileViewController {
         let height = heightTextField.text ?? ""
         let weight = weightTextField.text ?? ""
         let birth = dateTextField.text ?? ""
-        let gender = true
-        let activ = 1
+        let gender = maleButton.backgroundColor == .appBeige ? true : false
+        let activity =  lowButton.backgroundColor == .appBeige ? 1 :
+        (middleButton.backgroundColor == .appBeige ? 2 : 3)
         
         if password != confirmPassword {
             SVProgressHUD.showError(withStatus: "Пароли должны совпадать")
@@ -554,7 +563,7 @@ private extension SecondProfileViewController {
                 "height": height,
                 "weight": weight,
                 "birth": birth,
-                "activity": activ
+                "activity": activity
             ]
         ]
         
@@ -672,8 +681,8 @@ private extension SecondProfileViewController {
     }
     
     func deleteAccountTapped() {
-        let email = emailTextField.text!
-        let password = passwordTextField.text!
+        let email = emailTextField.text ?? ""
+        let password = passwordTextField.text ?? ""
         
         SVProgressHUD.show()
         
@@ -699,7 +708,6 @@ private extension SecondProfileViewController {
                     SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
                 }
             } else {
-                // Обработка ошибок сервера
                 if let statusCode = response.response?.statusCode {
                     SVProgressHUD.showError(withStatus: "Server error: \(statusCode)")
                 } else {
@@ -710,11 +718,13 @@ private extension SecondProfileViewController {
     }
     
     func logoutDelete() {
-        let rootVC = UINavigationController(rootViewController: OnboardingVC())
-        
-        let appDelegate = UIApplication.shared.delegate as! AppDelegate
-        appDelegate.window?.rootViewController = rootVC
-        appDelegate.window?.makeKeyAndVisible()
-        
+        DispatchQueue.main.async {
+            let rootVC = UINavigationController(rootViewController: OnboardingVC())
+            
+            let appDelegate = UIApplication.shared.delegate as! AppDelegate
+//            UserDefaults.standard.removeObject(forKey: "access_token")
+            appDelegate.window?.rootViewController = rootVC
+            appDelegate.window?.makeKeyAndVisible()
+        }
     }
 }

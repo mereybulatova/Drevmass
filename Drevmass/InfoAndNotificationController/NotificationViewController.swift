@@ -7,6 +7,9 @@
 
 import UIKit
 import AdvancedPageControl
+import SVProgressHUD
+import SwiftyJSON
+import Alamofire
 
 class NotificationViewController: UIViewController {
     
@@ -96,7 +99,7 @@ class NotificationViewController: UIViewController {
         button.configuration?.titleAlignment = .center
         button.layer.cornerRadius = 30
         
-        button.addTarget(self, action: #selector(skipButtonTapped), for: .touchUpInside)
+        button.addTarget(self, action: #selector(startAppTapped), for: .primaryActionTriggered)
         return button
     }()
     
@@ -204,6 +207,60 @@ private extension NotificationViewController {
 
 extension NotificationViewController {
     
+    @objc
+    func startAppTapped() {
+        SVProgressHUD.show()
+        let headers: HTTPHeaders = ["Authorization": "Bearer \(Storage.sharedInstance.access_token)"]
+
+        let monday = weekdayButtons[0].backgroundColor == .appBeige ? "1" : "0"
+        let tuesday = weekdayButtons[1].backgroundColor == .appBeige ? "1" : "0"
+        let wednesday = weekdayButtons[2].backgroundColor == .appBeige ? "1" : "0"
+        let thursday = weekdayButtons[3].backgroundColor == .appBeige ? "1" : "0"
+        let friday = weekdayButtons[4].backgroundColor == .appBeige ? "1" : "0"
+        let saturday = weekdayButtons[5].backgroundColor == .appBeige ? "1" : "0"
+        let sunday = weekdayButtons[6].backgroundColor == .appBeige ? "1" : "0"
+
+        let dateFormatter = DateFormatter()
+
+        dateFormatter.dateFormat = "HH:mm"
+
+        let time = dateFormatter.string(from: datePicker.date)
+
+        AF.upload(multipartFormData: { form in
+            form.append(monday.data(using: .utf8)!, withName: "monday")
+            form.append(tuesday.data(using: .utf8)!, withName: "tuesday")
+            form.append(wednesday.data(using: .utf8)!, withName: "wednesday")
+            form.append(thursday.data(using: .utf8)!, withName: "thursday")
+            form.append(friday.data(using: .utf8)!, withName: "friday")
+            form.append(saturday.data(using: .utf8)!, withName: "saturday")
+            form.append(sunday.data(using: .utf8)!, withName: "sunday")
+            form.append(time.data(using: .utf8)!, withName: "time")
+        }, to: Urls.NOTIFICATION_URL, headers: headers).responseData { response in
+            
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 ||
+                response.response?.statusCode == 201 {
+                self.skipButtonTapped()
+                
+            } else {
+                SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+                
+                var ErrorString = "CONNECTION_ERROR"
+                if let sCode = response.response?.statusCode {
+                    ErrorString = ErrorString + " \(sCode)"
+                }
+                ErrorString = ErrorString + " \(resultString)"
+                SVProgressHUD.showError(withStatus: "\(ErrorString)")
+            }
+        }
+    }
+    
      func createWeekdayButton(title: String) -> UIButton {
          let button = UIButton()
          
@@ -223,7 +280,7 @@ extension NotificationViewController {
         }
     }
     
-    @objc private func skipButtonTapped() {
+    @objc func skipButtonTapped() {
         let tabBarController = TabBarController()
         tabBarController.modalPresentationStyle = .fullScreen
         self.present(tabBarController, animated: true, completion: nil)

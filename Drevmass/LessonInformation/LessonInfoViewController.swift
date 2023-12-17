@@ -135,6 +135,7 @@ class LessonInfoViewController: UIViewController {
         setupViews()
         setupConstraints()
         setData()
+        buttonsSettings()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -236,15 +237,15 @@ extension LessonInfoViewController {
     }
     
     @objc func addToFavorite() {
-        var method = HTTPMethod.post
-        let action = "add"
+        let method = HTTPMethod.post
+        let action = lesson.favorite == 0 ? "add" : "remove"
         SVProgressHUD.show()
         
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(Storage.sharedInstance.access_token)"
         ]
         
-        let parameters: [String : Any] = ["lesson_id": 2, "action": action]
+        let parameters: [String : Any] = ["lesson_id": lesson.id, "action": action]
         AF.request(Urls.FAVORITE_URL, method: method, parameters: parameters, encoding: JSONEncoding.default, headers: headers).responseData { response in
             
             SVProgressHUD.dismiss()
@@ -255,7 +256,7 @@ extension LessonInfoViewController {
             }
             
             if response.response?.statusCode == 200 || response.response?.statusCode == 201 {
-                self.lesson.favorite = 1
+                self.lesson.favorite = self.lesson.favorite == 0 ? 1 : 0
                 self.buttonsSettings()
             } else {
                 var ErrorString = "CONNECTION_ERROR"

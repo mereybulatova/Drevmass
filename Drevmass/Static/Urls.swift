@@ -24,4 +24,5 @@ class Urls {
     static let INFORMATION_POST_URL = BASE_URL + "information"
     static let SUPPORT_URL = BASE_URL + "supports"
     static let DELETE_USER_URL = BASE_URL + "user/delete"
+    static let NOTIFICATION_URL = BASE_URL + "days"
 }

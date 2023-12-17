@@ -251,7 +251,6 @@ extension ProductsInfoViewController {
         playerVC.video_src = products.video_src
         
         navigationController?.show(playerVC, sender: true)
-        navigationItem.title = ""
     }
     
     func setData() {

@@ -159,17 +159,21 @@ extension LessonsCollectionViewCell {
         let durationInSeconds = lesson.duration
         let formattedTime = formatTime(durationInSeconds: durationInSeconds)
         timeLabel.text = formattedTime
+        
+        self.lessons = lesson
+
+        buttonsSettings()
     }
     
     @objc func addToFavorite() {
         let method = HTTPMethod.post
-        let actionString = "add"
+        let actionString = lessons.favorite == 0 ? "add" : "remove"
         
         SVProgressHUD.show()
         let headers: HTTPHeaders = [
             "Authorization": "Bearer \(Storage.sharedInstance.access_token)"
         ]
-        let parameters = ["lesson_id": 1, "action": actionString] as [String : Any]
+        let parameters = ["lesson_id": lessons.id, "action": actionString] as [String : Any]
         
         AF.upload(multipartFormData: { multiPart in
             for (key, value) in parameters {
@@ -186,7 +190,9 @@ extension LessonsCollectionViewCell {
                 print(resultString) 
             }
             
-            if response.response?.statusCode == 200 {
+            if response.response?.statusCode == 200 ||
+               response.response?.statusCode == 201 {
+                self.lessons.favorite = self.lessons.favorite == 1 ? 0 : 1
                 self.buttonsSettings()
             } else {
                 var ErrorString = "CONNECTION_ERROR"
@@ -199,7 +205,11 @@ extension LessonsCollectionViewCell {
         }
     }
     
-   public func buttonsSettings() {
+    public func buttonsSettings() {
+        if (lessons.favorite == 1) {
             favoriteButton.setImage(UIImage(named: "favoriteSelectedLessons"), for: .normal)
+        } else {
+            favoriteButton.setImage(UIImage(named: "favoriteLessons"), for: .normal)
+        }
     }
 }

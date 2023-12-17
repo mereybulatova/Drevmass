@@ -344,6 +344,7 @@ private extension ProfileViewController {
             let rootVC = UINavigationController(rootViewController: OnboardingVC())
             
             let appDelegate = UIApplication.shared.delegate as! AppDelegate
+            UserDefaults.standard.removeObject(forKey: "access_token")
             appDelegate.window?.rootViewController = rootVC
             appDelegate.window?.makeKeyAndVisible()
         }

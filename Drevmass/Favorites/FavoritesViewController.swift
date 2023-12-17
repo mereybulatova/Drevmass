@@ -71,6 +71,8 @@ extension FavoritesViewController {
                 print("JSON: \(json)")
                 
                 if let array = json.array {
+                    self.favorite = []
+                    
                     for item in array {
                         let lesson = Lessons(json: item)
                         self.favorite.append(lesson)

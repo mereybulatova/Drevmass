@@ -15,6 +15,7 @@ class ProfileNotificationsViewController: UIViewController {
     
     var userID: Int?
     var selectedDays: Int = 0
+    var day = Day()
     
     //MARK: - UI Elements
     
@@ -72,6 +73,7 @@ class ProfileNotificationsViewController: UIViewController {
         button.titleLabel?.font = .appFont(ofSize: 18, weight: .light, font: .Rubik)
         button.configuration?.titleAlignment = .center
         button.layer.cornerRadius = 30
+        button.addTarget(self, action: #selector(saveNotificationSettings), for: .primaryActionTriggered)
         return button
     }()
     
@@ -146,14 +148,8 @@ extension ProfileNotificationsViewController {
             
             if response.response?.statusCode == 200 {
                 let json = JSON(response.data!)
-                let monday = json ["day"]["monday"]
-                let tuesday = json ["day"]["tuesday"]
-                let wednesday = json ["day"]["wednesday"]
-                let thursday = json ["day"]["thursday"]
-                let friday = json ["day"]["friday"]
-                let saturday = json ["day"]["saturday"]
-                let sunday = json ["day"]["sunday"]
-                self.userID = json ["id"].int
+                self.day = Day(json: json)
+                self.configureDay()
             } else {
                 SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
 
@@ -164,6 +160,76 @@ extension ProfileNotificationsViewController {
                 ErrorString = ErrorString + " \(resultString)"
                 SVProgressHUD.showError(withStatus: "\(ErrorString)")
             }
+        }
+    }
+    
+    @objc
+    func saveNotificationSettings() {
+        SVProgressHUD.show()
+        let headers: HTTPHeaders = ["Authorization": "Bearer \(Storage.sharedInstance.access_token)"]
+
+        let monday = weekdayButtons[0].backgroundColor == .appBeige ? "1" : "0"
+        let tuesday = weekdayButtons[1].backgroundColor == .appBeige ? "1" : "0"
+        let wednesday = weekdayButtons[2].backgroundColor == .appBeige ? "1" : "0"
+        let thursday = weekdayButtons[3].backgroundColor == .appBeige ? "1" : "0"
+        let friday = weekdayButtons[4].backgroundColor == .appBeige ? "1" : "0"
+        let saturday = weekdayButtons[5].backgroundColor == .appBeige ? "1" : "0"
+        let sunday = weekdayButtons[6].backgroundColor == .appBeige ? "1" : "0"
+
+        let dateFormatter = DateFormatter()
+
+        dateFormatter.dateFormat = "HH:mm"
+
+        let time = dateFormatter.string(from: datePicker.date)
+
+        AF.upload(multipartFormData: { form in
+            form.append(monday.data(using: .utf8)!, withName: "monday")
+            form.append(tuesday.data(using: .utf8)!, withName: "tuesday")
+            form.append(wednesday.data(using: .utf8)!, withName: "wednesday")
+            form.append(thursday.data(using: .utf8)!, withName: "thursday")
+            form.append(friday.data(using: .utf8)!, withName: "friday")
+            form.append(saturday.data(using: .utf8)!, withName: "saturday")
+            form.append(sunday.data(using: .utf8)!, withName: "sunday")
+            form.append(time.data(using: .utf8)!, withName: "time")
+        }, to: Urls.NOTIFICATION_URL, headers: headers).responseData { response in
+
+            SVProgressHUD.dismiss()
+            var resultString = ""
+            if let data = response.data {
+                resultString = String(data: data, encoding: .utf8)!
+                print(resultString)
+            }
+            
+            if response.response?.statusCode == 200 {                self.navigationController?.popViewController(animated: true)
+                
+            } else {
+                SVProgressHUD.showError(withStatus: "CONNECTION_ERROR")
+
+                var ErrorString = "CONNECTION_ERROR"
+                if let sCode = response.response?.statusCode {
+                    ErrorString = ErrorString + " \(sCode)"
+                }
+                ErrorString = ErrorString + " \(resultString)"
+                SVProgressHUD.showError(withStatus: "\(ErrorString)")
+            }
+        }
+    }
+    
+    func configureDay() {
+        weekdayButtons[0].backgroundColor = day.monday != 0 ? .appBeige : .appWhite
+        weekdayButtons[1].backgroundColor = day.tuesday != 0 ? .appBeige : .appWhite
+        weekdayButtons[2].backgroundColor = day.wednesday != 0 ? .appBeige : .appWhite
+        weekdayButtons[3].backgroundColor = day.thursday != 0 ? .appBeige : .appWhite
+        weekdayButtons[4].backgroundColor = day.friday != 0 ? .appBeige : .appWhite
+        weekdayButtons[5].backgroundColor = day.saturday != 0 ? .appBeige : .appWhite
+        weekdayButtons[6].backgroundColor = day.sunday != 0 ? .appBeige : .appWhite
+
+        let dateFormatter = DateFormatter()
+
+        dateFormatter.dateFormat = "HH:mm:ss"
+
+        if let time = dateFormatter.date(from: day.time) {
+            datePicker.date = time
         }
     }
     
